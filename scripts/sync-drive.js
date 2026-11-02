@@ -20,7 +20,7 @@ fs.mkdirSync(MEDIA_CACHE_DIR, { recursive: true });
 
 function runGdrive(args) {
   return new Promise((resolve, reject) => {
-    execFile('gdrive', args, { maxBuffer: 20 * 1024 * 1024, shell: true }, (err, stdout, stderr) => {
+    execFile('gdrive', args, { maxBuffer: 20 * 1024 * 1024, shell: process.platform === 'win32' }, (err, stdout, stderr) => {
       if (err) {
         return reject(new Error(`gdrive ${args.join(' ')} failed: ${stderr || err.message}`));
       }

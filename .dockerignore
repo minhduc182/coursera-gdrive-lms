@@ -1,0 +1,6 @@
+node_modules
+data
+gdrive-auth
+config.local.json
+.git
+.playwright-mcp

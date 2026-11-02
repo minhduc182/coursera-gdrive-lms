@@ -1,0 +1,13 @@
+services:
+  coursera-lms:
+    build: .
+    container_name: coursera-gdrive-lms
+    restart: unless-stopped
+    ports:
+      - "3456:3456"
+    environment:
+      - PORT=3456
+    volumes:
+      - ./config.local.json:/app/config.local.json:ro
+      - ./data:/app/data
+      - ./gdrive-auth:/root/.gemini/antigravity/plugin_data/gdrive
