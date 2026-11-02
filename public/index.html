@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coursera | Certified Business Analysis Professional (CBAP)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app" class="cds-app">
+    <!-- Coursera Global Header (56px, clean & authentic) -->
+    <header class="cds-header">
+      <div class="cds-header-left">
+        <!-- 9-dots App Switcher button (opens Specialization Switcher) -->
+        <button class="cds-app-grid-btn" id="btnSpecOverview" title="Chuyển đổi giữa 4 Khóa học trong CBAP Specialization">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="5" r="2"></circle><circle cx="12" cy="5" r="2"></circle><circle cx="19" cy="5" r="2"></circle>
+            <circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle>
+            <circle cx="5" cy="19" r="2"></circle><circle cx="12" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle>
+          </svg>
+        </button>
+
+        <a href="#home" class="cds-logo" id="btnHomeLogo">coursera</a>
+
+        <span class="cds-header-sep"></span>
+
+        <!-- Course Selector Dropdown in Header -->
+        <div class="cds-course-switcher-wrap">
+          <select id="headerCourseSelect" class="cds-header-course-select" aria-label="Chọn khóa học"></select>
+        </div>
+      </div>
+
+      <!-- Coursera Search Box -->
+      <div class="cds-header-center">
+        <div class="cds-search-bar" id="btnOpenSearch">
+          <input type="text" readonly placeholder="Search in course..." />
+          <span class="cds-kbd">Ctrl K</span>
+          <button class="cds-search-circle-btn" aria-label="Search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="cds-header-right">
+        <button class="cds-top-link-btn" id="btnOpenAllNotes" title="Sổ tay ghi chú">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Notes (<span id="totalNotesBadge">0</span>)</span>
+        </button>
+
+        <a class="cds-top-link-btn" id="rootDriveLink" href="#" target="_blank" rel="noopener" title="Mở thư mục gốc trên Google Drive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Drive</span>
+        </a>
+
+        <div class="cds-user-avatar" title="minhduc.to1808@gmail.com">MD</div>
+      </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <div class="cds-body">
+      <!-- VIEW 1: COURSERA COURSE HOME (Left Navigation Sidebar + Module Content Column) -->
+      <div id="dashboardView" class="cds-course-home"></div>
+
+      <!-- VIEW 2: COURSERA LECTURE / ITEM VIEW (Left Collapsible Drawer + Right Main Stage) -->
+      <div id="workspaceView" class="cds-lecture-layout hidden">
+        <!-- Left Collapsible Sidebar -->
+        <aside id="courseSidebar" class="cds-lecture-sidebar">
+          <div class="cds-lecture-sidebar-top">
+            <button class="cds-hide-menu-btn" id="btnToggleSidebar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Hide menu</span>
+            </button>
+            <a href="#course-home" class="cds-back-home-link" id="btnSidebarCourseHome">Course Home</a>
+          </div>
+          <div id="sidebarCurriculum" class="cds-lecture-sidebar-scroll"></div>
+        </aside>
+
+        <!-- Right Main Content Area -->
+        <main id="lessonStage" class="cds-lecture-main">
+          <!-- Sub-topbar inside main pane: Breadcrumb on left, Previous / Next on right -->
+          <div class="cds-lecture-breadcrumb-bar">
+            <div class="cds-lecture-bc-left">
+              <button class="cds-show-menu-btn hidden" id="btnShowSidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <span>Menu</span>
+              </button>
+              <nav class="cds-breadcrumbs" id="classroomBreadcrumb"></nav>
+            </div>
+            <div class="cds-lecture-bc-right" id="classroomPrevNext"></div>
+          </div>
+
+          <!-- Lesson Content Container -->
+          <div id="lessonContainer" class="cds-lecture-content"></div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="cds-modal-backdrop hidden">
+      <div class="cds-modal-dialog">
+        <div class="cds-modal-search-bar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0056D2" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search for concepts, video transcripts (.srt) or readings (.html)..." autocomplete="off" />
+          <select id="searchCourseFilter" class="cds-select-sm">
+            <option value="">All 4 Courses</option>
+          </select>
+          <button class="cds-icon-close" id="btnCloseSearch">✕</button>
+        </div>
+        <div id="searchResultsContainer" class="cds-modal-body">
+          <div class="cds-empty-state">Type at least 2 characters to search across lesson titles, reading materials (.html), and video subtitles (.srt).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div id="notesModal" class="cds-modal-backdrop hidden">
+      <div class="cds-modal-dialog">
+        <div class="cds-modal-header">
+          <h3>Course Notes</h3>
+          <button class="cds-icon-close" id="btnCloseNotes">✕</button>
+        </div>
+        <div id="allNotesContainer" class="cds-modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

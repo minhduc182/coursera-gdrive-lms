@@ -1,0 +1,10 @@
+{
+  "name": "coursera-cbap-lms",
+  "version": "1.0.0",
+  "description": "Coursera Learning Portal connected to Google Drive for CBAP Specialization",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "sync": "node scripts/sync-drive.js"
+  }
+}

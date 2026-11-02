@@ -1,0 +1,14 @@
+# Local Google Drive configuration & credentials (DO NOT COMMIT)
+config.local.json
+.env
+.env.*
+
+# Local Drive catalog, user learning progress & media/text caches (contains Drive File IDs & links)
+data/
+
+# Dependencies & temporary files
+node_modules/
+.playwright-mcp/
+*.log
+.DS_Store
+Thumbs.db

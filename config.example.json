@@ -1,0 +1,5 @@
+{
+  "rootFolderId": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
+  "rootFolderUrl": "https://drive.google.com/drive/folders/YOUR_GOOGLE_DRIVE_FOLDER_ID",
+  "port": 3456
+}
