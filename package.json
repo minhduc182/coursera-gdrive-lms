@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "sync": "node scripts/sync-drive.js"
+    "sync": "node scripts/sync-drive.js",
+    "auth-drive": "node scripts/auth-drive.js"
   }
 }

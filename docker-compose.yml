@@ -10,4 +10,5 @@ services:
     volumes:
       - ./config.local.json:/app/config.local.json:ro
       - ./data:/app/data
+      - ./gdrive-auth:/app/gdrive-auth
       - ./gdrive-auth:/root/.gemini/antigravity/plugin_data/gdrive

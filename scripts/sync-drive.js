@@ -1,11 +1,8 @@
-const { execFile } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { runGdrive, getProjectConfig } = require('../lib/gdrive');
 
-const CONFIG_PATH = path.join(__dirname, '..', 'config.local.json');
-const localConfig = fs.existsSync(CONFIG_PATH)
-  ? JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'))
-  : {};
+const localConfig = getProjectConfig();
 const ROOT_FOLDER_ID = process.env.GDRIVE_ROOT_FOLDER_ID || localConfig.rootFolderId;
 if (!ROOT_FOLDER_ID || ROOT_FOLDER_ID === 'YOUR_GOOGLE_DRIVE_FOLDER_ID') {
   console.error('Error: Missing rootFolderId. Please configure config.local.json (copy from config.example.json).');
@@ -17,17 +14,6 @@ const MEDIA_CACHE_DIR = path.join(DATA_DIR, 'cache', 'media');
 
 fs.mkdirSync(TEXT_CACHE_DIR, { recursive: true });
 fs.mkdirSync(MEDIA_CACHE_DIR, { recursive: true });
-
-function runGdrive(args) {
-  return new Promise((resolve, reject) => {
-    execFile('gdrive', args, { maxBuffer: 20 * 1024 * 1024, shell: process.platform === 'win32' }, (err, stdout, stderr) => {
-      if (err) {
-        return reject(new Error(`gdrive ${args.join(' ')} failed: ${stderr || err.message}`));
-      }
-      resolve(stdout);
-    });
-  });
-}
 
 async function listFolder(folderId) {
   const out = await runGdrive(['readonly', 'ls', folderId, '--json']);

@@ -1,5 +1,7 @@
 # Local Google Drive configuration & credentials (DO NOT COMMIT)
 config.local.json
+gdrive-auth/
+.gdrive-home/
 .env
 .env.*
 

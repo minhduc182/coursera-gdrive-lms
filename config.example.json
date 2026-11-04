@@ -1,5 +1,11 @@
 {
+  "port": 3456,
+  "drive": {
+    "account": "your-account@gmail.com",
+    "tokenPath": "./gdrive-auth/token.json",
+    "storageRootFolderId": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
+    "storageRootFolderUrl": "https://drive.google.com/drive/folders/YOUR_GOOGLE_DRIVE_FOLDER_ID"
+  },
   "rootFolderId": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
-  "rootFolderUrl": "https://drive.google.com/drive/folders/YOUR_GOOGLE_DRIVE_FOLDER_ID",
-  "port": 3456
+  "rootFolderUrl": "https://drive.google.com/drive/folders/YOUR_GOOGLE_DRIVE_FOLDER_ID"
 }

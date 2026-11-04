@@ -3,8 +3,15 @@ const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
 const { URL } = require('url');
+const {
+  runGdrive,
+  getProjectConfig,
+  saveProjectConfig,
+  getDriveAuthStatus
+} = require('./lib/gdrive');
 
-const PORT = process.env.PORT || 3456;
+const initialConfig = getProjectConfig();
+const PORT = process.env.PORT || initialConfig.port || 3456;
 const DATA_DIR = path.join(__dirname, 'data');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const TEXT_CACHE_DIR = path.join(DATA_DIR, 'cache', 'text');
@@ -19,17 +26,6 @@ fs.mkdirSync(MEDIA_CACHE_DIR, { recursive: true });
 const inFlightDownloads = new Map();
 let searchIndexCache = null;
 let isSyncing = false;
-
-function runGdrive(args) {
-  return new Promise((resolve, reject) => {
-    execFile('gdrive', args, { maxBuffer: 25 * 1024 * 1024, shell: process.platform === 'win32' }, (err, stdout, stderr) => {
-      if (err) {
-        return reject(new Error(`gdrive ${args.join(' ')} failed: ${stderr || err.message}`));
-      }
-      resolve(stdout);
-    });
-  });
-}
 
 function loadCatalog() {
   if (!fs.existsSync(CATALOG_PATH)) return null;
@@ -318,10 +314,25 @@ const server = http.createServer(async (req, res) => {
     // 1. GET /api/catalog
     if (req.method === 'GET' && pathname === '/api/catalog') {
       const catalog = loadCatalog();
+      const config = getProjectConfig();
       if (!catalog) {
-        return sendJson(res, 200, { syncing: true, catalog: null });
+        return sendJson(res, 200, { syncing: true, catalog: null, storage: config.drive });
       }
-      return sendJson(res, 200, { syncing: isSyncing, catalog });
+      return sendJson(res, 200, { syncing: isSyncing, catalog, storage: config.drive });
+    }
+
+    // 1b. GET & POST /api/storage-config
+    if (req.method === 'GET' && pathname === '/api/storage-config') {
+      const config = getProjectConfig();
+      const authStatus = await getDriveAuthStatus();
+      return sendJson(res, 200, { config: config.drive, authStatus });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/storage-config') {
+      const body = await readJsonBody(req);
+      const updated = saveProjectConfig(body);
+      const authStatus = await getDriveAuthStatus();
+      return sendJson(res, 200, { ok: true, config: updated.drive, authStatus });
     }
 
     // 2. GET /api/state
