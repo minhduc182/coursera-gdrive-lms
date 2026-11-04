@@ -11,6 +11,7 @@ WORKDIR /app
 
 COPY package.json ./
 COPY server.js ./
+COPY lib ./lib
 COPY scripts ./scripts
 COPY public ./public
 COPY config.example.json ./
