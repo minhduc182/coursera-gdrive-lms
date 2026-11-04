@@ -107,33 +107,143 @@ async function mapPool(items, concurrency, fn) {
 }
 
 const COURSE_METADATA = {
-  'coursera-learn-business-analysis-mastery': {
+  // Giai đoạn 1: Business Analyst (BA)
+  'coursera-learn-introduction-to-business-analysis': {
     order: 1,
+    code: 'BA-1',
+    title: 'Introduction to Business Analysis (IBM)',
+    shortTitle: '[GĐ1] 1. Intro to Business Analysis (IBM)',
+    description: 'Khóa nhập môn Phân tích Nghiệp vụ của IBM dành cho người mới bắt đầu: vai trò BA, quy trình thu thập yêu cầu và phân tích các bên liên quan.'
+  },
+  'coursera-learn-business-analysis-process-modeling-requirements-gathering': {
+    order: 2,
+    code: 'BA-2',
+    title: 'Business Analysis: Process Modeling & Requirements Gathering (IBM)',
+    shortTitle: '[GĐ1] 2. Process Modeling & Requirements (IBM)',
+    description: 'Mô hình hóa quy trình nghiệp vụ (BPMN, Flowchart), thu thập và tài liệu hóa yêu cầu thực tế qua Lab và dự án.'
+  },
+  'coursera-learn-business-analysis-mastery': {
+    order: 3,
     code: 'CBAP-1',
     title: 'Business Analysis Mastery: Foundation & Strategy Analysis',
-    shortTitle: '1. BA Mastery & Strategy Analysis',
+    shortTitle: '[GĐ1] 3. CBAP 1: BA Mastery & Strategy',
     description: 'Nền tảng Phân tích Nghiệp vụ (BABOK), mô hình khái niệm cốt lõi (BACCM) và Phân tích Chiến lược (SWOT, BMC, KPIs, Balanced Scorecard, Quản trị rủi ro).'
   },
   'coursera-learn-advanced-business-analysis-elicitation-analysis': {
-    order: 2,
+    order: 4,
     code: 'CBAP-2',
     title: 'Advanced Business Analysis: Elicitation & Requirements Analysis',
-    shortTitle: '2. Elicitation & Requirements Analysis',
+    shortTitle: '[GĐ1] 4. CBAP 2: Elicitation & Analysis',
     description: 'Kỹ thuật Khơi gợi yêu cầu (Interviews, Focus Groups, Workshops, Mindmapping) & Phân tích Thiết kế Yêu cầu (User Stories, Use Cases, Process/Data/State Modelling, NFRs).'
   },
   'coursera-learn-advanced-requirements-management-solution-evaluation': {
-    order: 3,
+    order: 5,
     code: 'CBAP-3',
     title: 'Advanced Requirements Lifecycle Management & Solution Evaluation',
-    shortTitle: '3. Lifecycle Mgmt & Solution Evaluation',
+    shortTitle: '[GĐ1] 5. CBAP 3: Lifecycle & Evaluation',
     description: 'Quản lý vòng đời yêu cầu (Tracing, Prioritisation, Backlog Management với Jira) và Đánh giá Giải pháp (Root Cause Analysis, Data Mining, Lessons Learned).'
   },
   'coursera-learn-business-analysis-mastery-planning-skills-and-perspective': {
-    order: 4,
+    order: 6,
     code: 'CBAP-4',
     title: 'Business Analysis Planning, Soft Skills & Perspectives',
-    shortTitle: '4. BA Planning, Skills & Perspectives',
+    shortTitle: '[GĐ1] 6. CBAP 4: Planning & Perspectives',
     description: 'Lập kế hoạch & Giám sát BA, Kỹ năng mềm (Design Sprint), và 5 góc nhìn chuyên sâu (Agile, Business Intelligence, IT, Business Architecture, BPM).'
+  },
+
+  // Giai đoạn 2: Project Manager (Google PM + Jira + Cầu nối BA-Product)
+  'coursera-learn-project-management-foundations': {
+    order: 11,
+    code: 'PM-1',
+    title: 'Foundations of Project Management (Google PM 1)',
+    shortTitle: '[GĐ2] 1. Foundations of Project Mgmt',
+    description: 'Khóa 1 thuộc Google Project Management: nền tảng quản trị dự án, vòng đời dự án, phương pháp Waterfall vs Agile và cơ cấu tổ chức.'
+  },
+  'coursera-learn-project-initiation-google': {
+    order: 12,
+    code: 'PM-2',
+    title: 'Project Initiation: Starting a Successful Project (Google PM 2)',
+    shortTitle: '[GĐ2] 2. Project Initiation (Google)',
+    description: 'Khóa 2 thuộc Google Project Management: xác định mục tiêu, phạm vi (Scope), OKRs, phân tích Stakeholder, RACI chart và lập Project Charter.'
+  },
+  'coursera-learn-project-planning-google': {
+    order: 13,
+    code: 'PM-3',
+    title: 'Project Planning: Putting It All Together (Google PM 3)',
+    shortTitle: '[GĐ2] 3. Project Planning (Google)',
+    description: 'Khóa 3 thuộc Google Project Management: lập WBS, ước lượng thời gian, lập ngân sách, quản trị rủi ro và kế hoạch truyền thông dự án.'
+  },
+  'coursera-learn-project-execution-google': {
+    order: 14,
+    code: 'PM-4',
+    title: 'Project Execution: Running the Project (Google PM 4)',
+    shortTitle: '[GĐ2] 4. Project Execution (Google)',
+    description: 'Khóa 4 thuộc Google Project Management: theo dõi tiến độ, quản lý thay đổi, kiểm soát chất lượng, dẫn dắt đội ngũ và đóng dự án.'
+  },
+  'coursera-learn-agile-project-management': {
+    order: 15,
+    code: 'PM-5',
+    title: 'Agile Project Management (Google PM 5)',
+    shortTitle: '[GĐ2] 5. Agile Project Mgmt (Google)',
+    description: 'Khóa 5 thuộc Google Project Management: triết lý Agile, khung Scrum (Product Backlog, Sprint Planning, Daily Scrum, Retrospective) và coaching đội nhóm.'
+  },
+  'coursera-learn-applying-project-management': {
+    order: 16,
+    code: 'PM-6',
+    title: 'Capstone: Applying Project Management in the Real World (Google PM 6)',
+    shortTitle: '[GĐ2] 6. PM Capstone (Google)',
+    description: 'Khóa 6 Thực hành tổng hợp (Capstone): xây dựng bộ tài liệu quản lý dự án hoàn chỉnh từ Charter, WBS đến báo cáo tiến độ thực tế.'
+  },
+  'coursera-learn-agile-atlassian-jira': {
+    order: 17,
+    code: 'JIRA',
+    title: 'Agile with Atlassian Jira',
+    shortTitle: '[GĐ2] 7. Agile with Atlassian Jira',
+    description: 'Làm chủ công cụ Atlassian Jira cho các dự án Scrum và Kanban: cấu hình bảng, bộ lọc JQL, quản lý Epic/Story và theo dõi tiến độ.'
+  },
+  'coursera-learn-client-needs-and-software-requirements': {
+    order: 18,
+    code: 'BA-REQ',
+    title: 'Client Needs and Software Requirements (University of Alberta)',
+    shortTitle: '[GĐ2] 8. Client Needs & SW Requirements',
+    description: 'Cầu nối BA sang Product: làm rõ nhu cầu khách hàng, viết User Stories, Use Cases, Wireframes/Storyboards và xử lý thay đổi yêu cầu phần mềm.'
+  },
+
+  // Giai đoạn 3: Digital Product Management (UVA Darden)
+  'coursera-learn-uva-darden-digital-product-management': {
+    order: 21,
+    code: 'PROD-1',
+    title: 'Digital Product Management: Modern Fundamentals (UVA Darden 1)',
+    shortTitle: '[GĐ3] 1. Digital Product Mgmt Fundamentals',
+    description: 'Khóa 1 chuyên ngành Digital Product Management (ĐH Virginia): vai trò Product Manager hiện đại, khám phá vấn đề khách hàng và thiết kế lộ trình sản phẩm.'
+  },
+  'coursera-learn-uva-darden-getting-started-agile': {
+    order: 22,
+    code: 'PROD-2',
+    title: 'Agile Meets Design Thinking (UVA Darden 2)',
+    shortTitle: '[GĐ3] 2. Agile Meets Design Thinking',
+    description: 'Khóa 2 chuyên ngành Digital Product Management: kết hợp Design Thinking và Agile, xây dựng Personas, Problem Scenarios và User Stories lấy người dùng làm trung tâm.'
+  },
+  'coursera-learn-uva-darden-agile-testing': {
+    order: 23,
+    code: 'PROD-3',
+    title: 'Hypothesis-Driven Development (UVA Darden 3)',
+    shortTitle: '[GĐ3] 3. Hypothesis-Driven Development',
+    description: 'Khóa 3 chuyên ngành Digital Product Management: phát triển sản phẩm dựa trên giả thuyết, thiết kế thực nghiệm MVP, phỏng vấn khách hàng và kiểm thử A/B.'
+  },
+  'coursera-learn-uva-darden-agile-analytics': {
+    order: 24,
+    code: 'PROD-4',
+    title: 'Product Analytics and AI (UVA Darden 4)',
+    shortTitle: '[GĐ3] 4. Product Analytics & AI',
+    description: 'Khóa 4 chuyên ngành Digital Product Management: đo lường hành vi người dùng (Pirate Metrics AARRR, Cohort Analysis), kinh tế đơn vị (LTV/CAC) và ứng dụng AI.'
+  },
+  'coursera-learn-uva-darden-agile-team-management': {
+    order: 25,
+    code: 'PROD-5',
+    title: 'Managing an Agile Team (UVA Darden 5)',
+    shortTitle: '[GĐ3] 5. Managing an Agile Team',
+    description: 'Khóa 5 chuyên ngành Digital Product Management: xây dựng văn hóa đội ngũ Agile hiệu suất cao, điều phối cộng tác liên chức năng và cải tiến liên tục.'
   }
 };
 
