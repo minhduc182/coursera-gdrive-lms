@@ -2,6 +2,7 @@
 config.local.json
 gdrive-auth/
 .gdrive-home/
+.gdrive-source-home/
 .env
 .env.*
 

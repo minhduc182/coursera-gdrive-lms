@@ -2,6 +2,7 @@ node_modules
 data
 gdrive-auth
 .gdrive-home
+.gdrive-source-home
 config.local.json
 .git
 .playwright-mcp

@@ -8,7 +8,7 @@ services:
     environment:
       - PORT=3456
     volumes:
-      - ./config.local.json:/app/config.local.json:ro
+      - ./config.local.json:/app/config.local.json
       - ./data:/app/data
       - ./gdrive-auth:/app/gdrive-auth
       - ./gdrive-auth:/root/.gemini/antigravity/plugin_data/gdrive
