@@ -1166,3 +1166,152 @@ a:hover {
   color: var(--cds-text-muted);
   padding: 28px 16px;
 }
+
+/* ── Profile Modal: Gợi ý lộ trình học & Get khóa học ───────── */
+.cds-user-avatar {
+  border: none;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.cds-user-avatar:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 3px var(--cds-blue-light);
+}
+.cds-user-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 15px;
+  cursor: default;
+}
+.cds-profile-modal-dialog {
+  width: 900px;
+  max-width: 95vw;
+  max-height: 86vh;
+}
+.cds-profile-header {
+  padding: 16px 22px;
+}
+.cds-profile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cds-profile-tabs {
+  display: flex;
+  gap: 24px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--cds-border-light);
+  background: #FAFBFC;
+}
+.cds-profile-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 12px 4px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--cds-text-secondary);
+  cursor: pointer;
+}
+.cds-profile-tab:hover {
+  color: var(--cds-blue);
+}
+.cds-profile-tab.active {
+  color: var(--cds-blue);
+  border-bottom-color: var(--cds-blue);
+}
+.cds-profile-body {
+  padding: 20px 22px;
+  gap: 18px;
+}
+.cds-roadmap-stage {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #FFFFFF;
+}
+.cds-roadmap-stage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.cds-roadmap-stage-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+}
+.cds-roadmap-stage-badge {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cds-blue);
+  background: var(--cds-blue-light);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.cds-roadmap-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--cds-border-light);
+}
+.cds-roadmap-item:first-of-type {
+  margin-top: 10px;
+}
+.cds-crawler-box {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #F9FAFB;
+}
+.cds-crawler-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.cds-crawler-input {
+  flex: 1;
+  border: 1px solid var(--cds-border);
+  border-radius: 4px;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 14px;
+}
+.cds-crawler-input:focus {
+  outline: none;
+  border-color: var(--cds-blue);
+}
+.cds-check-card {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  margin-top: 12px;
+}
+.cds-check-card--ok {
+  border-left: 4px solid var(--cds-green);
+}
+.cds-check-card--fail {
+  border-left: 4px solid #D92D20;
+}
+.cds-uncrawlable-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.cds-uncrawlable-table th,
+.cds-uncrawlable-table td {
+  text-align: left;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--cds-border-light);
+  vertical-align: top;
+}
+.cds-uncrawlable-table th {
+  font-weight: 700;
+  color: var(--cds-text-secondary);
+  background: #F5F7F8;
+}

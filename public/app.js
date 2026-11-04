@@ -1398,6 +1398,406 @@ function setupModals() {
   notesModal.addEventListener('click', (e) => {
     if (e.target === notesModal) notesModal.classList.add('hidden');
   });
+
+  // ── Profile Modal: Gợi ý lộ trình học & Get khóa học ─────────
+  const profileModal = document.getElementById('profileModal');
+  const profileBody = document.getElementById('profileModalBody');
+  let activeProfileTab = 'roadmap'; // 'roadmap' | 'crawler'
+  let roadmapDataCache = null;
+  let lastCheckResult = null;
+  let pendingCheckUrl = '';
+  let crawlPollTimer = null;
+
+  function isCourseInCatalog(urlOrSlug) {
+    if (!state.catalog?.courses || !urlOrSlug) return null;
+    const str = String(urlOrSlug).toLowerCase();
+    if (str.includes('certified-business-analysis-professional-cbap')) {
+      return state.catalog.courses[0] || null;
+    }
+    const slugMatch = str.match(/\/learn\/([a-z0-9_-]+)/);
+    const slug = slugMatch ? slugMatch[1] : str.replace(/^coursera-learn-/, '');
+    return state.catalog.courses.find(
+      c => c.slug === slug || c.slug === `coursera-learn-${slug}` || c.slug.endsWith(slug)
+    ) || null;
+  }
+
+  async function loadProfileData() {
+    const data = await apiGet('/api/roadmap');
+    roadmapDataCache = data;
+    const accEl = document.getElementById('profileDriveAccountText');
+    if (accEl && data.storage?.account) {
+      accEl.innerHTML = `Drive lưu trữ: <strong>${escapeHtml(data.storage.account)}</strong> · <a href="${escapeHtml(data.storage.storageRootFolderUrl || '#')}" target="_blank" rel="noopener" style="color:var(--cds-blue); text-decoration:none; font-weight:600;">Mở thư mục gốc ↗</a>`;
+    }
+    return data;
+  }
+
+  function startCrawlPolling() {
+    if (crawlPollTimer) clearInterval(crawlPollTimer);
+    crawlPollTimer = setInterval(async () => {
+      try {
+        const st = await apiGet('/api/coursera/status');
+        if (roadmapDataCache) {
+          roadmapDataCache.crawlJob = st.job;
+          roadmapDataCache.uncrawlableCourses = st.uncrawlableCourses;
+        }
+        if (!profileModal.classList.contains('hidden') && activeProfileTab === 'crawler') {
+          renderCrawlJobBox(st.job);
+        }
+        if (!st.job?.running) {
+          clearInterval(crawlPollTimer);
+          crawlPollTimer = null;
+          // Reload catalog so newly imported course shows up immediately
+          const catRes = await apiGet('/api/catalog');
+          if (catRes.catalog) {
+            state.catalog = catRes.catalog;
+            renderHeader();
+          }
+          if (!profileModal.classList.contains('hidden')) {
+            renderProfileBody();
+          }
+        }
+      } catch (e) {
+        clearInterval(crawlPollTimer);
+        crawlPollTimer = null;
+      }
+    }, 2500);
+  }
+
+  function renderCrawlJobBox(job) {
+    const box = document.getElementById('crawlJobStatusContainer');
+    if (!box) return;
+    if (!job || (!job.running && !job.finishedAt)) {
+      box.innerHTML = '';
+      return;
+    }
+    const pct = job.totalItems > 0 ? Math.min(100, Math.round((job.completedItems / job.totalItems) * 100)) : (job.running ? 10 : 100);
+    const isErr = !!job.error;
+    box.innerHTML = `
+      <div class="cds-check-card ${isErr ? 'cds-check-card--fail' : 'cds-check-card--ok'}" style="margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div style="font-weight:700; font-size:14.5px;">
+            ${job.running ? '⏳ Đang triển khai lấy khóa học về Drive...' : (isErr ? '⚠️ Tiến trình dừng do lỗi' : '✅ Đã lấy khóa học về Drive và đồng bộ hoàn tất!')}
+          </div>
+          <span style="font-size:13px; font-weight:700; color:var(--cds-blue);">${job.completedItems}/${job.totalItems || '?'} mục (${pct}%)</span>
+        </div>
+        <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:4px;">${escapeHtml(job.statusText || '')}</div>
+        <div style="height:7px; background:#E5E7EB; border-radius:99px; overflow:hidden; margin-top:8px;">
+          <div style="height:100%; width:${pct}%; background:${isErr ? '#D92D20' : 'var(--cds-blue)'}; transition:width 0.3s;"></div>
+        </div>
+        ${(job.logs && job.logs.length > 0) ? `
+          <div style="margin-top:10px; max-height:110px; overflow-y:auto; background:#F8FAFC; border:1px solid var(--cds-border-light); border-radius:4px; padding:8px 10px; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#334155;">
+            ${job.logs.slice(0, 12).map(l => `<div>${escapeHtml(l)}</div>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function renderProfileBody() {
+    if (!roadmapDataCache) {
+      profileBody.innerHTML = `<div class="cds-empty-state">Đang tải dữ liệu hồ sơ...</div>`;
+      return;
+    }
+
+    document.querySelectorAll('[data-profile-tab]').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-profile-tab') === activeProfileTab);
+    });
+
+    if (activeProfileTab === 'roadmap') {
+      const stages = roadmapDataCache.stages || [];
+      profileBody.innerHTML = `
+        <div style="font-size:14px; color:var(--cds-text-secondary); line-height:1.55;">
+          Lộ trình học tập cá nhân được gợi ý theo 3 giai đoạn từ <strong>Business Analyst (BA)</strong> → <strong>Project Manager (PM)</strong> → <strong>Digital Product Management (Product)</strong>. Bạn có thể bấm <em>"Kiểm tra / Lấy khóa này"</em> ở bất kỳ mục nào để chuyển sang trình lấy khóa học tự động.
+        </div>
+        ${stages.map(st => `
+          <div class="cds-roadmap-stage">
+            <div class="cds-roadmap-stage-head">
+              <div class="cds-roadmap-stage-title">${escapeHtml(st.title)}</div>
+              <span class="cds-roadmap-stage-badge">${escapeHtml(st.duration)}</span>
+            </div>
+            <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-bottom:6px;">${escapeHtml(st.description)}</div>
+            <div>
+              ${(st.items || []).map(item => {
+                const existingCourse = isCourseInCatalog(item.url);
+                return `
+                  <div class="cds-roadmap-item">
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">
+                        ${escapeHtml(item.title)}
+                      </div>
+                      <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                        <strong>${escapeHtml(item.provider)}</strong> · ${escapeHtml(item.duration)} · Mức: ${escapeHtml(item.level)}
+                        · <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--cds-blue); text-decoration:none;">Link Coursera ↗</a>
+                      </div>
+                      ${item.note ? `<div style="font-size:12.5px; color:#475467; margin-top:3px;">${escapeHtml(item.note)}</div>` : ''}
+                    </div>
+                    <div style="flex-shrink:0; display:flex; align-items:center; gap:8px;">
+                      ${existingCourse ? `
+                        <button class="cds-btn-outline-sm" type="button" data-open-existing-course="${existingCourse.id}" style="border-color:var(--cds-green); color:var(--cds-green);">
+                          ✓ Đã có (Mở học)
+                        </button>
+                      ` : `
+                        <button class="cds-btn-primary" type="button" data-quick-check-url="${escapeHtml(item.url)}" style="padding:6px 12px; font-size:12.5px;">
+                          Kiểm tra / Lấy khóa này
+                        </button>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      profileBody.querySelectorAll('[data-open-existing-course]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cId = btn.getAttribute('data-open-existing-course');
+          profileModal.classList.add('hidden');
+          openCourseHome(cId, null, 'module');
+        });
+      });
+
+      profileBody.querySelectorAll('[data-quick-check-url]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pendingCheckUrl = btn.getAttribute('data-quick-check-url') || '';
+          activeProfileTab = 'crawler';
+          renderProfileBody();
+          triggerCheckCourseraUrl(pendingCheckUrl);
+        });
+      });
+      return;
+    }
+
+    // Tab 2: Get khóa học (Coursera)
+    const uncrawlable = roadmapDataCache.uncrawlableCourses || [];
+    profileBody.innerHTML = `
+      <div class="cds-crawler-box">
+        <div style="font-weight:700; font-size:15px; color:var(--cds-text-primary);">
+          Lấy khóa học từ Coursera về Google Drive (${escapeHtml(roadmapDataCache.storage?.account || 'duc.to.dev@gmail.com')})
+        </div>
+        <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:3px;">
+          Quy trình: Dán link khóa học (<code>/learn/...</code>) hoặc chuyên ngành (<code>/specializations/...</code>, <code>/professional-certificates/...</code>) → Hệ thống kiểm tra khả năng crawl → Nếu lấy được sẽ cho phép triển khai đẩy thẳng về Drive; nếu bị khóa sẽ lưu vào bảng thông tin bên dưới.
+        </div>
+        <div class="cds-crawler-input-row">
+          <input type="text" id="courseraUrlInput" class="cds-crawler-input" value="${escapeHtml(pendingCheckUrl)}" placeholder="Paste link khóa học Coursera (VD: https://www.coursera.org/learn/project-management-foundations)..." />
+          <button class="cds-btn-primary" id="btnCheckCourseraUrl" type="button" style="padding:9px 18px;">Kiểm tra (Check)</button>
+        </div>
+        <div id="courseraCheckResultBox"></div>
+        <div id="crawlJobStatusContainer"></div>
+      </div>
+
+      <div style="margin-top:6px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <h4 style="margin:0; font-size:15px; font-weight:700;">Bảng thông tin các khóa học không thể lấy (${uncrawlable.length})</h4>
+        </div>
+        ${uncrawlable.length === 0 ? `
+          <div style="border:1px solid var(--cds-border-light); border-radius:6px; padding:18px; text-align:center; font-size:13.5px; color:var(--cds-text-muted); background:#FFFFFF;">
+            Chưa có khóa học nào bị lỗi hoặc từ chối quyền truy cập.
+          </div>
+        ` : `
+          <div style="border:1px solid var(--cds-border-light); border-radius:6px; overflow:hidden; background:#FFFFFF;">
+            <table class="cds-uncrawlable-table">
+              <thead>
+                <tr>
+                  <th style="width:28%;">Khóa học / Slug</th>
+                  <th style="width:45%;">Lý do không thể lấy</th>
+                  <th style="width:17%;">Thời gian check</th>
+                  <th style="width:10%;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${uncrawlable.map(u => `
+                  <tr>
+                    <td>
+                      <div style="font-weight:700; color:var(--cds-text-primary);">${escapeHtml(u.title || u.slug)}</div>
+                      <a href="${escapeHtml(u.url)}" target="_blank" rel="noopener" style="font-size:12px; color:var(--cds-blue); word-break:break-all;">${escapeHtml(u.url)}</a>
+                    </td>
+                    <td style="color:#B42318; font-weight:500;">${escapeHtml(u.reason)}</td>
+                    <td style="font-size:12px; color:var(--cds-text-secondary);">${u.checkedAt ? new Date(u.checkedAt).toLocaleString('vi-VN') : ''}</td>
+                    <td>
+                      <button class="cds-btn-outline-sm" type="button" data-delete-uncrawl="${escapeHtml(u.id)}" style="padding:3px 8px; font-size:12px;">Xóa</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+    `;
+
+    renderCheckResultBox();
+    renderCrawlJobBox(roadmapDataCache.crawlJob);
+    if (roadmapDataCache.crawlJob?.running && !crawlPollTimer) {
+      startCrawlPolling();
+    }
+
+    const inputEl = document.getElementById('courseraUrlInput');
+    const btnCheck = document.getElementById('btnCheckCourseraUrl');
+    btnCheck?.addEventListener('click', () => {
+      pendingCheckUrl = inputEl?.value?.trim() || '';
+      triggerCheckCourseraUrl(pendingCheckUrl);
+    });
+    inputEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        pendingCheckUrl = inputEl.value.trim();
+        triggerCheckCourseraUrl(pendingCheckUrl);
+      }
+    });
+
+    profileBody.querySelectorAll('[data-delete-uncrawl]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-delete-uncrawl');
+        const res = await apiDelete(`/api/coursera/uncrawlable/${id}`);
+        roadmapDataCache.uncrawlableCourses = res.uncrawlableCourses || [];
+        renderProfileBody();
+      });
+    });
+  }
+
+  function renderCheckResultBox() {
+    const box = document.getElementById('courseraCheckResultBox');
+    if (!box) return;
+    if (!lastCheckResult) {
+      box.innerHTML = '';
+      return;
+    }
+
+    if (lastCheckResult.loading) {
+      box.innerHTML = `
+        <div class="cds-check-card" style="color:var(--cds-text-secondary); font-size:14px;">
+          🔍 Đang kết nối tới Coursera API để kiểm tra khả năng lấy video 720p, phụ đề và bài đọc cho <strong>${escapeHtml(lastCheckResult.url)}</strong>...
+        </div>
+      `;
+      return;
+    }
+
+    const res = lastCheckResult.data;
+    if (!res) return;
+
+    if (!res.crawlable) {
+      box.innerHTML = `
+        <div class="cds-check-card cds-check-card--fail">
+          <div style="font-weight:700; font-size:15px; color:#B42318;">✕ Không thể lấy tự động khóa học này</div>
+          <div style="font-size:13.5px; color:var(--cds-text-primary); margin-top:4px;"><strong>${escapeHtml(res.title || res.inputUrl)}</strong>: ${escapeHtml(res.reason)}</div>
+          <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:6px;">Hệ thống đã tự động ghi nhận khóa học này vào <em>"Bảng thông tin các khóa học không thể lấy"</em> bên dưới.</div>
+        </div>
+      `;
+      return;
+    }
+
+    const courses = res.courses || [];
+    const crawlableSlugs = courses.filter(c => c.crawlable).map(c => c.slug);
+
+    box.innerHTML = `
+      <div class="cds-check-card cds-check-card--ok">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:700; font-size:15.5px; color:var(--cds-green);">✓ Có thể lấy khóa học này về Google Drive!</div>
+            <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-top:2px;">${escapeHtml(res.title)} — ${escapeHtml(res.reason)}</div>
+          </div>
+          ${crawlableSlugs.length > 1 ? `
+            <button class="cds-btn-primary" type="button" data-deploy-slugs="${escapeHtml(crawlableSlugs.join(','))}">
+              Triển khai lấy toàn bộ (${crawlableSlugs.length} khóa)
+            </button>
+          ` : ''}
+        </div>
+
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+          ${courses.map(c => {
+            const alreadyIn = isCourseInCatalog(c.slug);
+            return `
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid var(--cds-border-light); border-radius:6px; background:#FAFBFC;">
+                <div style="min-width:0; flex:1;">
+                  <div style="font-weight:700; font-size:14px; color:var(--cds-text-primary);">${escapeHtml(c.title)} <code style="font-size:12px; color:#475467;">(${escapeHtml(c.slug)})</code></div>
+                  <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                    ${c.crawlable
+                      ? `${c.modulesCount} modules · <strong>${c.unlockedLectures}/${c.totalLectures}</strong> video 720p · <strong>${c.readingsCount}</strong> bài đọc · Phụ đề: ${c.hasEnSub ? 'EN' : ''}${c.hasViSub ? ' + VI' : ''}`
+                      : `<span style="color:#B42318;">Không lấy được: ${escapeHtml(c.reason)}</span>`
+                    }
+                  </div>
+                </div>
+                <div style="flex-shrink:0;">
+                  ${c.crawlable ? `
+                    <button class="cds-btn-primary" type="button" data-deploy-slugs="${escapeHtml(c.slug)}" style="padding:6px 14px; font-size:13px;">
+                      ${alreadyIn ? 'Cập nhật / Lấy lại khóa này' : 'Triển khai lấy khóa học'}
+                    </button>
+                  ` : `
+                    <span style="font-size:12px; font-weight:700; color:#B42318;">Đã lưu bảng lỗi</span>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    box.querySelectorAll('[data-deploy-slugs]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const rawSlugs = btn.getAttribute('data-deploy-slugs') || '';
+        const slugs = rawSlugs.split(',').map(s => s.trim()).filter(Boolean);
+        if (slugs.length === 0) return;
+        try {
+          btn.disabled = true;
+          btn.textContent = 'Đang khởi chạy...';
+          const resp = await apiPost('/api/coursera/import', { slugs });
+          roadmapDataCache.crawlJob = resp.job;
+          renderCrawlJobBox(resp.job);
+          startCrawlPolling();
+        } catch (err) {
+          alert('Không thể khởi chạy: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = 'Triển khai lấy khóa học';
+        }
+      });
+    });
+  }
+
+  async function triggerCheckCourseraUrl(url) {
+    if (!url) return;
+    lastCheckResult = { loading: true, url };
+    renderCheckResultBox();
+    try {
+      const resp = await apiPost('/api/coursera/check', { url });
+      lastCheckResult = { loading: false, url, data: resp.result };
+      if (roadmapDataCache && resp.uncrawlableCourses) {
+        roadmapDataCache.uncrawlableCourses = resp.uncrawlableCourses;
+      }
+      renderProfileBody();
+    } catch (err) {
+      lastCheckResult = {
+        loading: false,
+        url,
+        data: {
+          crawlable: false,
+          title: url,
+          reason: err.message
+        }
+      };
+      renderCheckResultBox();
+    }
+  }
+
+  document.getElementById('btnOpenProfile')?.addEventListener('click', async () => {
+    profileModal.classList.remove('hidden');
+    await loadProfileData();
+    renderProfileBody();
+  });
+
+  document.querySelectorAll('[data-profile-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeProfileTab = btn.getAttribute('data-profile-tab') || 'roadmap';
+      renderProfileBody();
+    });
+  });
+
+  document.getElementById('btnCloseProfile')?.addEventListener('click', () => profileModal.classList.add('hidden'));
+  profileModal?.addEventListener('click', (e) => {
+    if (e.target === profileModal) profileModal.classList.add('hidden');
+  });
 }
 
 // ── Init ─────────────────────────────────────────────────────

@@ -9,6 +9,12 @@ const {
   saveProjectConfig,
   getDriveAuthStatus
 } = require('./lib/gdrive');
+const {
+  ROADMAP_STAGES,
+  checkCourseraUrl,
+  startCrawlJob,
+  getCrawlJobStatus
+} = require('./lib/coursera-crawler');
 
 const initialConfig = getProjectConfig();
 const PORT = process.env.PORT || initialConfig.port || 3456;
@@ -41,6 +47,7 @@ function loadUserState() {
     progress: {},
     notes: [],
     bookmarks: [],
+    uncrawlableCourses: [],
     lastVisited: null,
     preferences: {
       playerMode: 'html5', // 'html5' | 'iframe'
@@ -58,6 +65,7 @@ function loadUserState() {
     return {
       ...defaultState,
       ...raw,
+      uncrawlableCourses: Array.isArray(raw.uncrawlableCourses) ? raw.uncrawlableCourses : [],
       preferences: { ...defaultState.preferences, ...(raw.preferences || {}) }
     };
   } catch (e) {
@@ -631,6 +639,93 @@ const server = http.createServer(async (req, res) => {
         if (err) console.error('Sync failed:', err);
       });
       return sendJson(res, 200, { ok: true, syncing: true });
+    }
+
+    // 14. GET /api/roadmap & Coursera Crawler APIs
+    if (req.method === 'GET' && pathname === '/api/roadmap') {
+      const state = loadUserState();
+      const config = getProjectConfig();
+      return sendJson(res, 200, {
+        stages: ROADMAP_STAGES,
+        uncrawlableCourses: state.uncrawlableCourses || [],
+        crawlJob: getCrawlJobStatus(),
+        storage: config.drive
+      });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/coursera/check') {
+      const body = await readJsonBody(req);
+      const url = (body.url || '').trim();
+      if (!url) return sendJson(res, 400, { error: 'Vui lòng nhập link khóa học Coursera' });
+
+      const result = await checkCourseraUrl(url);
+      const state = loadUserState();
+      state.uncrawlableCourses = state.uncrawlableCourses || [];
+
+      const recordUncrawlable = (itemUrl, itemTitle, itemSlug, itemReason) => {
+        const existingIdx = state.uncrawlableCourses.findIndex(
+          u => u.url === itemUrl || (itemSlug && u.slug === itemSlug)
+        );
+        const entry = {
+          id: existingIdx >= 0 ? state.uncrawlableCourses[existingIdx].id : `uncrawl_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          url: itemUrl,
+          title: itemTitle || itemSlug || itemUrl,
+          slug: itemSlug || '',
+          reason: itemReason,
+          checkedAt: new Date().toISOString()
+        };
+        if (existingIdx >= 0) {
+          state.uncrawlableCourses[existingIdx] = entry;
+        } else {
+          state.uncrawlableCourses.unshift(entry);
+        }
+      };
+
+      if (!result.crawlable) {
+        recordUncrawlable(result.inputUrl || url, result.title, result.courses?.[0]?.slug || '', result.reason);
+        saveUserState(state);
+      } else if (Array.isArray(result.courses)) {
+        let added = false;
+        for (const c of result.courses) {
+          if (!c.crawlable) {
+            recordUncrawlable(c.url, c.title, c.slug, c.reason);
+            added = true;
+          }
+        }
+        if (added) saveUserState(state);
+      }
+
+      return sendJson(res, 200, {
+        ok: true,
+        result,
+        uncrawlableCourses: state.uncrawlableCourses
+      });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/coursera/import') {
+      const body = await readJsonBody(req);
+      const slugs = body.slugs || (body.slug ? [body.slug] : []);
+      const job = startCrawlJob(slugs, () => {
+        searchIndexCache = null;
+      });
+      return sendJson(res, 200, { ok: true, job });
+    }
+
+    if (req.method === 'GET' && pathname === '/api/coursera/status') {
+      const state = loadUserState();
+      return sendJson(res, 200, {
+        ok: true,
+        job: getCrawlJobStatus(),
+        uncrawlableCourses: state.uncrawlableCourses || []
+      });
+    }
+
+    if (req.method === 'DELETE' && pathname.startsWith('/api/coursera/uncrawlable/')) {
+      const id = pathname.replace('/api/coursera/uncrawlable/', '');
+      const state = loadUserState();
+      state.uncrawlableCourses = (state.uncrawlableCourses || []).filter(u => u.id !== id);
+      saveUserState(state);
+      return sendJson(res, 200, { ok: true, uncrawlableCourses: state.uncrawlableCourses });
     }
 
     // Static files from public/

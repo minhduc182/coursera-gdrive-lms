@@ -68,7 +68,7 @@
           <span>Drive</span>
         </a>
 
-        <div class="cds-user-avatar" title="minhduc.to1808@gmail.com">MD</div>
+        <button class="cds-user-avatar" id="btnOpenProfile" type="button" title="Hồ sơ của tôi: Gợi ý lộ trình học &amp; Get khóa học (duc.to.dev@gmail.com)">MD</button>
       </div>
     </header>
 
@@ -145,6 +145,29 @@
           <button class="cds-icon-close" id="btnCloseNotes">✕</button>
         </div>
         <div id="allNotesContainer" class="cds-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Profile Modal (Gợi ý lộ trình học & Get khóa học) -->
+    <div id="profileModal" class="cds-modal-backdrop hidden">
+      <div class="cds-modal-dialog cds-profile-modal-dialog">
+        <div class="cds-modal-header cds-profile-header">
+          <div class="cds-profile-user-info">
+            <div class="cds-user-avatar cds-user-avatar--lg">MD</div>
+            <div>
+              <h3 style="margin:0; font-size:18px; font-weight:700;">Hồ sơ học tập của tôi</h3>
+              <div id="profileDriveAccountText" style="font-size:12.5px; color:#5B6780; margin-top:2px;">Drive lưu trữ: duc.to.dev@gmail.com</div>
+            </div>
+          </div>
+          <button class="cds-icon-close" id="btnCloseProfile">✕</button>
+        </div>
+
+        <div class="cds-profile-tabs">
+          <button class="cds-profile-tab active" data-profile-tab="roadmap" type="button">Gợi ý lộ trình học</button>
+          <button class="cds-profile-tab" data-profile-tab="crawler" type="button">Get khóa học (Coursera)</button>
+        </div>
+
+        <div id="profileModalBody" class="cds-modal-body cds-profile-body"></div>
       </div>
     </div>
   </div>
