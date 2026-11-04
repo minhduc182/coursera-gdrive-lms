@@ -15,6 +15,20 @@ const {
   startCrawlJob,
   getCrawlJobStatus
 } = require('./lib/coursera-crawler');
+const {
+  applyStealthHeaders,
+  getClientIp,
+  isRateLimited,
+  recordFailedLogin,
+  clearFailedLogin,
+  signSessionToken,
+  isRequestAuthenticated,
+  verifyCredentials,
+  buildSetCookieHeader,
+  buildClearCookieHeader,
+  renderStealthLoginPage,
+  updateAuthPassword
+} = require('./lib/auth');
 
 const initialConfig = getProjectConfig();
 const PORT = process.env.PORT || initialConfig.port || 3456;
@@ -316,8 +330,84 @@ const MIME_TYPES = {
 
 const server = http.createServer(async (req, res) => {
   try {
+    applyStealthHeaders(res);
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = decodeURIComponent(parsedUrl.pathname);
+
+    // 0. Anti-crawler robots.txt
+    if (req.method === 'GET' && pathname === '/robots.txt') {
+      res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=86400'
+      });
+      return res.end('User-agent: *\nDisallow: /\n');
+    }
+
+    // 0b. Public Auth Endpoints (/api/auth/login & /api/auth/logout)
+    if (req.method === 'POST' && pathname === '/api/auth/login') {
+      const ip = getClientIp(req);
+      if (isRateLimited(ip)) {
+        return sendJson(res, 429, {
+          ok: false,
+          error: 'Quá nhiều lần đăng nhập sai. Vui lòng thử lại sau 15 phút.'
+        });
+      }
+
+      const body = await readJsonBody(req);
+      const valid = verifyCredentials(body.username, body.password);
+      if (!valid) {
+        recordFailedLogin(ip);
+        return sendJson(res, 401, {
+          ok: false,
+          error: 'Tài khoản hoặc mật khẩu truy cập không chính xác.'
+        });
+      }
+
+      clearFailedLogin(ip);
+      const cfg = getProjectConfig();
+      const token = signSessionToken(cfg.auth.username, cfg.auth.secret);
+      const isHttps = req.headers['x-forwarded-proto'] === 'https';
+      res.setHeader('Set-Cookie', buildSetCookieHeader(token, isHttps));
+      return sendJson(res, 200, { ok: true, user: cfg.auth.username });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/auth/logout') {
+      res.setHeader('Set-Cookie', buildClearCookieHeader());
+      return sendJson(res, 200, { ok: true });
+    }
+
+    // 0c. Authentication Gate for all external requests
+    const isInternalLoopback = !req.headers['x-real-ip'] && !req.headers['x-forwarded-for'] &&
+      (req.socket?.remoteAddress === '127.0.0.1' || req.socket?.remoteAddress === '::1' || req.socket?.remoteAddress === '::ffff:127.0.0.1');
+    const authCheck = isInternalLoopback ? { authenticated: true, user: 'internal' } : isRequestAuthenticated(req);
+
+    if (!authCheck.authenticated) {
+      if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html')) {
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store, no-cache, must-revalidate'
+        });
+        return res.end(renderStealthLoginPage());
+      }
+      if (pathname.startsWith('/api/')) {
+        return sendJson(res, 401, { error: 'Unauthorized', requireLogin: true });
+      }
+      res.writeHead(401, { 'Content-Type': 'text/plain; charset=utf-8' });
+      return res.end('Unauthorized');
+    }
+
+    // 0d. Authenticated password update endpoint
+    if (req.method === 'POST' && pathname === '/api/auth/password') {
+      const body = await readJsonBody(req);
+      if (!body.newPassword || String(body.newPassword).length < 4) {
+        return sendJson(res, 400, { error: 'Mật khẩu mới cần ít nhất 4 ký tự.' });
+      }
+      const updated = updateAuthPassword(body.newPassword, body.newUsername);
+      const token = signSessionToken(updated.auth.username, updated.auth.secret);
+      const isHttps = req.headers['x-forwarded-proto'] === 'https';
+      res.setHeader('Set-Cookie', buildSetCookieHeader(token, isHttps));
+      return sendJson(res, 200, { ok: true, username: updated.auth.username });
+    }
 
     // 1. GET /api/catalog
     if (req.method === 'GET' && pathname === '/api/catalog') {

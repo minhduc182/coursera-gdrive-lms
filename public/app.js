@@ -117,6 +117,10 @@ function findLessonContext(lessonId) {
 
 async function apiGet(url) {
   const res = await fetch(url);
+  if (res.status === 401) {
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
   if (!res.ok) throw new Error(`GET ${url} failed`);
   return res.json();
 }
@@ -127,12 +131,20 @@ async function apiPost(url, body = {}) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+  if (res.status === 401) {
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
   if (!res.ok) throw new Error(`POST ${url} failed`);
   return res.json();
 }
 
 async function apiDelete(url) {
   const res = await fetch(url, { method: 'DELETE' });
+  if (res.status === 401) {
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
   if (!res.ok) throw new Error(`DELETE ${url} failed`);
   return res.json();
 }
@@ -1797,6 +1809,26 @@ function setupModals() {
   document.getElementById('btnCloseProfile')?.addEventListener('click', () => profileModal.classList.add('hidden'));
   profileModal?.addEventListener('click', (e) => {
     if (e.target === profileModal) profileModal.classList.add('hidden');
+  });
+
+  document.getElementById('btnLogout')?.addEventListener('click', async () => {
+    await apiPost('/api/auth/logout', {});
+    window.location.reload();
+  });
+
+  document.getElementById('btnChangePassword')?.addEventListener('click', async () => {
+    const newPass = window.prompt('Nhập mật khẩu truy cập mới (ít nhất 4 ký tự):');
+    if (!newPass) return;
+    if (newPass.length < 4) {
+      alert('Mật khẩu mới cần ít nhất 4 ký tự.');
+      return;
+    }
+    try {
+      await apiPost('/api/auth/password', { newPassword: newPass });
+      alert('Đã cập nhật mật khẩu thành công!');
+    } catch (err) {
+      alert('Lỗi đổi mật khẩu: ' + err.message);
+    }
   });
 }
 
