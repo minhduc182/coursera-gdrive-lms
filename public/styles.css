@@ -1482,3 +1482,189 @@ a:hover {
   color: var(--cds-text-secondary);
   background: #F5F7F8;
 }
+
+/* ── Coursera Shopping & Discovery Catalog ── */
+.cds-shop-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.cds-shop-select {
+  height: 40px;
+  border: 1px solid #8C95A6;
+  border-radius: 4px;
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cds-text-primary);
+  background: var(--cds-bg-white);
+  cursor: pointer;
+}
+.cds-shop-select:focus {
+  outline: none;
+  border-color: var(--cds-blue);
+  box-shadow: 0 0 0 2px var(--cds-blue-light);
+}
+
+.cds-shop-vi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cds-text-primary);
+  cursor: pointer;
+  user-select: none;
+  padding: 0 8px;
+  height: 40px;
+  border: 1px solid var(--cds-border-light);
+  border-radius: 4px;
+  background: #FAFBFC;
+}
+.cds-shop-vi-label input {
+  accent-color: var(--cds-blue);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.cds-topic-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.cds-topic-chip {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 99px;
+  border: 1px solid var(--cds-border);
+  background: var(--cds-bg-white);
+  color: var(--cds-text-secondary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.cds-topic-chip:hover {
+  border-color: var(--cds-blue);
+  color: var(--cds-blue);
+  background: #F5F8FF;
+}
+.cds-topic-chip.active {
+  border-color: var(--cds-blue);
+  background: var(--cds-blue-light);
+  color: var(--cds-blue);
+  font-weight: 700;
+}
+
+.cds-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.cds-shop-card {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  background: var(--cds-bg-white);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.cds-shop-card:hover {
+  border-color: #B8C4D4;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.cds-shop-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cds-shop-thumb {
+  width: 84px;
+  height: 84px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--cds-border-light);
+  background: #F2F4F7;
+}
+
+.cds-shop-partner {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cds-text-secondary);
+  margin-bottom: 3px;
+}
+
+.cds-shop-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cds-shop-skills {
+  font-size: 12px;
+  color: var(--cds-text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cds-shop-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--cds-text-secondary);
+}
+
+.cds-shop-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+}
+.cds-shop-star {
+  color: #D97706;
+  font-size: 13px;
+}
+
+.cds-shop-footer {
+  border-top: 1px solid var(--cds-border-light);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cds-shop-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}

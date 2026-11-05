@@ -1580,14 +1580,55 @@ function setupModals() {
     if (e.target === notesModal) notesModal.classList.add('hidden');
   });
 
-  // ── Profile Modal: Gợi ý lộ trình học & Get khóa học ─────────
+  // ── Profile Modal: Gợi ý lộ trình học, Shopping & Get khóa học ─────────
   const profileModal = document.getElementById('profileModal');
   const profileBody = document.getElementById('profileModalBody');
-  let activeProfileTab = 'roadmap'; // 'roadmap' | 'crawler'
+  let activeProfileTab = 'roadmap'; // 'roadmap' | 'discover' | 'crawler'
   let roadmapDataCache = null;
   let lastCheckResult = null;
   let pendingCheckUrl = '';
   let crawlPollTimer = null;
+
+  // Coursera Discovery / Shopping state
+  let discoverQuery = 'business analysis';
+  let discoverTypeFilter = 'ALL';
+  let discoverViOnly = false;
+  let discoverItems = [];
+  let discoverLoading = false;
+  let discoverError = '';
+  const inlineCheckMap = {}; // url -> { loading, data }
+
+  const QUICK_TOPICS = [
+    { q: 'business analysis', label: 'Business Analysis' },
+    { q: 'product management', label: 'Product Management' },
+    { q: 'project management', label: 'Project Management' },
+    { q: 'agile scrum jira', label: 'Agile, Scrum & Jira' },
+    { q: 'sql data analytics', label: 'SQL & Data Analytics' },
+    { q: 'power bi tableau', label: 'Power BI & Tableau' },
+    { q: 'ux product design', label: 'UX & Product Design' },
+    { q: 'generative ai product', label: 'Generative AI' }
+  ];
+
+  async function runCourseraDiscoverSearch(queryStr) {
+    const q = String(queryStr ?? discoverQuery).trim() || 'business analysis';
+    discoverQuery = q;
+    discoverLoading = true;
+    discoverError = '';
+    if (!profileModal.classList.contains('hidden') && activeProfileTab === 'discover') {
+      renderProfileBody();
+    }
+    try {
+      const res = await apiGet(`/api/coursera/discover?q=${encodeURIComponent(q)}`);
+      discoverItems = res.items || [];
+      discoverLoading = false;
+    } catch (err) {
+      discoverError = err.message || 'Không thể kết nối danh mục Coursera.';
+      discoverLoading = false;
+    }
+    if (!profileModal.classList.contains('hidden') && activeProfileTab === 'discover') {
+      renderProfileBody();
+    }
+  }
 
   function isCourseInCatalog(urlOrSlug) {
     if (!state.catalog?.courses || !urlOrSlug) return null;
@@ -1621,7 +1662,7 @@ function setupModals() {
           roadmapDataCache.crawlJob = st.job;
           roadmapDataCache.uncrawlableCourses = st.uncrawlableCourses;
         }
-        if (!profileModal.classList.contains('hidden') && activeProfileTab === 'crawler') {
+        if (!profileModal.classList.contains('hidden') && (activeProfileTab === 'crawler' || activeProfileTab === 'discover')) {
           renderCrawlJobBox(st.job);
         }
         if (!st.job?.running) {
@@ -1742,9 +1783,13 @@ function setupModals() {
               Lộ trình 3 giai đoạn từ <strong>Business Analyst (BA)</strong> → <strong>Project Manager (PM)</strong> → <strong>Digital Product Management (Product)</strong>.
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <button class="cds-btn-outline cds-btn-sm" type="button" id="btnSwitchToAllCourses">
               <span>View All ${allCourses.length} Courses</span>
+            </button>
+            <button class="cds-btn-outline cds-btn-sm" type="button" id="btnSwitchToDiscoverTab">
+              ${SVG.compass}
+              <span>Shopping Coursera</span>
             </button>
             <button class="cds-btn-primary cds-btn-sm" type="button" id="btnSwitchToCrawlerTab">
               ${SVG.download}
@@ -1839,6 +1884,14 @@ function setupModals() {
         openCourseHome(state.activeCourseId, state.activeModuleId, 'specialization');
       });
 
+      document.getElementById('btnSwitchToDiscoverTab')?.addEventListener('click', () => {
+        activeProfileTab = 'discover';
+        renderProfileBody();
+        if (discoverItems.length === 0 && !discoverLoading) {
+          runCourseraDiscoverSearch(discoverQuery);
+        }
+      });
+
       document.getElementById('btnSwitchToCrawlerTab')?.addEventListener('click', () => {
         activeProfileTab = 'crawler';
         renderProfileBody();
@@ -1854,6 +1907,285 @@ function setupModals() {
           triggerCheckCourseraUrl(pendingCheckUrl);
         });
       });
+      return;
+    }
+
+    // Tab 2: Khám phá & Shopping Coursera trực tiếp
+    if (activeProfileTab === 'discover') {
+      const filteredItems = discoverItems.filter(it => {
+        if (discoverTypeFilter !== 'ALL' && it.productType !== discoverTypeFilter) return false;
+        if (discoverViOnly && !it.hasViSub) return false;
+        return true;
+      });
+
+      profileBody.innerHTML = `
+        <div class="cds-crawler-box">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:700; font-size:16.5px; color:var(--cds-text-primary);">
+                Coursera Catalog Explorer &amp; Course Shopping
+              </div>
+              <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                Tìm kiếm trực tiếp trên kho khóa học Coursera gốc — kiểm tra khả năng lấy video 720p + phụ đề (.srt) + bài đọc (.html) và tải thẳng về Google Drive (<strong>${escapeHtml(roadmapDataCache.storage?.account || 'duc.to.dev@gmail.com')}</strong>).
+              </div>
+            </div>
+            <span class="cds-status-pill cds-status-pill--synced">${SVG.compass} <span>Live Coursera Search</span></span>
+          </div>
+
+          <div class="cds-shop-filter-bar">
+            <input type="text" id="discoverSearchInput" class="cds-crawler-input" value="${escapeHtml(discoverQuery)}" placeholder="Tìm khóa học trên Coursera (VD: business analysis, product management, sql, jira, generative ai...)" />
+            <select id="discoverTypeSelect" class="cds-shop-select" aria-label="Loại học phần">
+              <option value="ALL" ${discoverTypeFilter === 'ALL' ? 'selected' : ''}>Tất cả loại (${discoverItems.length})</option>
+              <option value="COURSE" ${discoverTypeFilter === 'COURSE' ? 'selected' : ''}>Course (Khóa học đơn)</option>
+              <option value="SPECIALIZATION" ${discoverTypeFilter === 'SPECIALIZATION' ? 'selected' : ''}>Specialization (Chuyên ngành)</option>
+              <option value="PROFESSIONAL_CERTIFICATE" ${discoverTypeFilter === 'PROFESSIONAL_CERTIFICATE' ? 'selected' : ''}>Professional Certificate</option>
+            </select>
+            <label class="cds-shop-vi-label">
+              <input type="checkbox" id="discoverViCheck" ${discoverViOnly ? 'checked' : ''} />
+              <span>Có phụ đề Tiếng Việt</span>
+            </label>
+            <button class="cds-btn-primary" id="btnDiscoverSearch" type="button">
+              <span>Search Coursera</span>
+            </button>
+          </div>
+
+          <div class="cds-topic-chips">
+            <span style="font-size:12px; font-weight:700; color:var(--cds-text-secondary);">Chủ đề gợi ý:</span>
+            ${QUICK_TOPICS.map(t => `
+              <button type="button" class="cds-topic-chip ${discoverQuery.toLowerCase() === t.q.toLowerCase() ? 'active' : ''}" data-discover-topic="${escapeHtml(t.q)}">
+                ${escapeHtml(t.label)}
+              </button>
+            `).join('')}
+          </div>
+
+          <div id="crawlJobStatusContainer"></div>
+        </div>
+
+        <div class="cds-roadmap-stage">
+          <div class="cds-roadmap-stage-head" style="margin-bottom:4px;">
+            <div>
+              <div class="cds-roadmap-stage-title">
+                Kết quả từ Coursera cho "${escapeHtml(discoverQuery)}" (${filteredItems.length} học phần)
+              </div>
+              <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+                Bấm <strong>Check &amp; Get Course</strong> trên bất kỳ thẻ nào để kiểm tra quyền truy cập video 720p và tải về Google Drive ngay tại chỗ.
+              </div>
+            </div>
+          </div>
+
+          ${discoverLoading ? `
+            <div class="cds-check-card cds-check-card--running" style="display:flex; align-items:center; justify-content:center; gap:12px; padding:36px; font-size:14.5px; color:var(--cds-text-secondary);">
+              <span class="cds-spinner--sm"></span>
+              <span>Đang tìm kiếm trực tiếp trên danh mục Coursera cho từ khóa <strong>"${escapeHtml(discoverQuery)}"</strong>...</span>
+            </div>
+          ` : discoverError ? `
+            <div class="cds-check-card cds-check-card--fail">
+              <div style="font-weight:700; color:#B42318;">Lỗi tìm kiếm Coursera: ${escapeHtml(discoverError)}</div>
+            </div>
+          ` : filteredItems.length === 0 ? `
+            <div class="cds-empty-state" style="border:1px solid var(--cds-border-light); border-radius:8px; background:#FAFBFC; margin-top:12px;">
+              Không tìm thấy khóa học phù hợp với bộ lọc hiện tại. Hãy thử từ khóa khác hoặc bỏ bộ lọc loại khóa học.
+            </div>
+          ` : `
+            <div class="cds-shop-grid">
+              ${filteredItems.map(item => {
+                const existingCourse = isCourseInCatalog(item.url);
+                const chk = inlineCheckMap[item.url];
+                const chkRes = chk?.data;
+                const crawlableSubCourses = chkRes?.courses ? chkRes.courses.filter(c => c.crawlable) : [];
+                const crawlableSlugs = crawlableSubCourses.map(c => c.slug);
+                const totalVids = crawlableSubCourses.reduce((s, c) => s + (c.unlockedLectures || 0), 0);
+                const totalReads = crawlableSubCourses.reduce((s, c) => s + (c.readingsCount || 0), 0);
+
+                return `
+                  <div class="cds-shop-card">
+                    <div>
+                      <div class="cds-shop-card-top">
+                        ${item.imageUrl ? `<img class="cds-shop-thumb" src="${escapeHtml(item.imageUrl)}" alt="" loading="lazy" />` : ''}
+                        <div style="min-width:0; flex:1;">
+                          <div class="cds-shop-partner">${escapeHtml((item.partners || []).join(', ') || 'Coursera Partner')}</div>
+                          <div class="cds-shop-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
+                          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                            <span class="cds-status-pill cds-status-pill--neutral">${escapeHtml(item.productTypeLabel)}</span>
+                            ${item.hasViSub ? `<span class="cds-status-pill cds-status-pill--running">VI Subtitles</span>` : ''}
+                            ${existingCourse ? `<span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Synced (${escapeHtml(existingCourse.code)})</span></span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      ${(item.skills && item.skills.length > 0) ? `
+                        <div class="cds-shop-skills" style="margin-top:10px;">
+                          <strong>Skills:</strong> ${escapeHtml(item.skills.slice(0, 6).join(', '))}
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <div class="cds-shop-footer">
+                      <div class="cds-shop-meta">
+                        ${item.rating ? `
+                          <span class="cds-shop-rating">
+                            <span class="cds-shop-star">★</span>
+                            <span>${Number(item.rating).toFixed(1)}</span>
+                          </span>
+                          <span>(${Number(item.reviewsCount || 0).toLocaleString()} reviews)</span>
+                          <span>•</span>
+                        ` : ''}
+                        <span>${escapeHtml([item.difficulty, item.duration].filter(Boolean).join(' • ') || 'Flexible schedule')}</span>
+                      </div>
+
+                      ${chk?.loading ? `
+                        <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--cds-blue); background:var(--cds-blue-light); padding:8px 10px; border-radius:6px;">
+                          <span class="cds-spinner--sm"></span>
+                          <span>Đang kiểm tra video 720p, phụ đề (.srt) và bài đọc trên Coursera...</span>
+                        </div>
+                      ` : chkRes ? (
+                        chkRes.crawlable ? `
+                          <div style="font-size:12.5px; color:var(--cds-green); background:var(--cds-green-bg); padding:8px 10px; border-radius:6px; font-weight:600;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                              ${SVG.check}
+                              <span>Sẵn sàng tải ${crawlableSlugs.length}/${chkRes.courses.length} khóa (${totalVids} Videos 720p · ${totalReads} Readings)</span>
+                            </div>
+                          </div>
+                        ` : `
+                          <div style="font-size:12.5px; color:#B42318; background:#FEF3F2; padding:8px 10px; border-radius:6px; font-weight:600;">
+                            Không thể tải tự động: ${escapeHtml(chkRes.reason)}
+                          </div>
+                        `
+                      ) : ''}
+
+                      <div class="cds-shop-actions">
+                        <a class="cds-btn-outline cds-btn-sm" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
+                          ${SVG.external}
+                          <span>Coursera</span>
+                        </a>
+
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                          ${existingCourse ? `
+                            <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${existingCourse.id}">
+                              <span>Open Course</span>
+                            </button>
+                          ` : ''}
+
+                          ${chkRes?.crawlable ? `
+                            <button class="cds-btn-primary cds-btn-sm" type="button" data-shop-import="${escapeHtml(crawlableSlugs.join(','))}">
+                              ${SVG.download}
+                              <span>Download to Drive (${crawlableSlugs.length})</span>
+                            </button>
+                            ${chkRes.courses.length > 1 ? `
+                              <button class="cds-btn-outline cds-btn-sm" type="button" data-shop-detail="${escapeHtml(item.url)}">
+                                <span>Chi tiết (${chkRes.courses.length})</span>
+                              </button>
+                            ` : ''}
+                          ` : (!chk?.loading && !chkRes ? `
+                            <button class="${existingCourse ? 'cds-btn-outline' : 'cds-btn-primary'} cds-btn-sm" type="button" data-shop-check="${escapeHtml(item.url)}">
+                              ${SVG.download}
+                              <span>${existingCourse ? 'Check Update' : 'Check & Get Course'}</span>
+                            </button>
+                          ` : '')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
+        </div>
+      `;
+
+      renderCrawlJobBox(roadmapDataCache.crawlJob);
+      if (roadmapDataCache.crawlJob?.running && !crawlPollTimer) {
+        startCrawlPolling();
+      }
+
+      bindOpenCourseButtons(profileBody);
+
+      const discInput = document.getElementById('discoverSearchInput');
+      const discBtn = document.getElementById('btnDiscoverSearch');
+      const discType = document.getElementById('discoverTypeSelect');
+      const discVi = document.getElementById('discoverViCheck');
+
+      discBtn?.addEventListener('click', () => {
+        runCourseraDiscoverSearch(discInput?.value || '');
+      });
+      discInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runCourseraDiscoverSearch(discInput.value || '');
+        }
+      });
+      discType?.addEventListener('change', () => {
+        discoverTypeFilter = discType.value;
+        renderProfileBody();
+      });
+      discVi?.addEventListener('change', () => {
+        discoverViOnly = Boolean(discVi.checked);
+        renderProfileBody();
+      });
+
+      profileBody.querySelectorAll('[data-discover-topic]').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const topic = chip.getAttribute('data-discover-topic') || '';
+          runCourseraDiscoverSearch(topic);
+        });
+      });
+
+      profileBody.querySelectorAll('[data-shop-check]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const targetUrl = btn.getAttribute('data-shop-check');
+          if (!targetUrl) return;
+          inlineCheckMap[targetUrl] = { loading: true };
+          renderProfileBody();
+          try {
+            const resp = await apiPost('/api/coursera/check', { url: targetUrl });
+            inlineCheckMap[targetUrl] = { loading: false, data: resp.result };
+            if (roadmapDataCache && resp.uncrawlableCourses) {
+              roadmapDataCache.uncrawlableCourses = resp.uncrawlableCourses;
+            }
+          } catch (err) {
+            inlineCheckMap[targetUrl] = {
+              loading: false,
+              data: { crawlable: false, reason: err.message }
+            };
+          }
+          renderProfileBody();
+        });
+      });
+
+      profileBody.querySelectorAll('[data-shop-import]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const rawSlugs = btn.getAttribute('data-shop-import') || '';
+          const slugs = rawSlugs.split(',').map(s => s.trim()).filter(Boolean);
+          if (slugs.length === 0) return;
+          try {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="cds-spinner--sm"></span> <span>Starting...</span>`;
+            const resp = await apiPost('/api/coursera/import', { slugs });
+            roadmapDataCache.crawlJob = resp.job;
+            renderCrawlJobBox(resp.job);
+            startCrawlPolling();
+            profileBody.scrollTo({ top: 0, behavior: 'smooth' });
+          } catch (err) {
+            alert('Không thể khởi chạy: ' + err.message);
+            btn.disabled = false;
+            btn.innerHTML = `${SVG.download} <span>Download to Drive</span>`;
+          }
+        });
+      });
+
+      profileBody.querySelectorAll('[data-shop-detail]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetUrl = btn.getAttribute('data-shop-detail') || '';
+          if (!targetUrl) return;
+          pendingCheckUrl = targetUrl;
+          if (inlineCheckMap[targetUrl]?.data) {
+            lastCheckResult = { loading: false, url: targetUrl, data: inlineCheckMap[targetUrl].data };
+          }
+          activeProfileTab = 'crawler';
+          renderProfileBody();
+        });
+      });
+
       return;
     }
 
@@ -2176,12 +2508,28 @@ function setupModals() {
     profileModal.classList.remove('hidden');
     await loadProfileData();
     renderProfileBody();
+    if (activeProfileTab === 'discover' && discoverItems.length === 0 && !discoverLoading) {
+      runCourseraDiscoverSearch(discoverQuery);
+    }
+  });
+
+  document.getElementById('btnOpenExplore')?.addEventListener('click', async () => {
+    activeProfileTab = 'discover';
+    profileModal.classList.remove('hidden');
+    await loadProfileData();
+    renderProfileBody();
+    if (discoverItems.length === 0 && !discoverLoading) {
+      runCourseraDiscoverSearch(discoverQuery);
+    }
   });
 
   document.querySelectorAll('[data-profile-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       activeProfileTab = btn.getAttribute('data-profile-tab') || 'roadmap';
       renderProfileBody();
+      if (activeProfileTab === 'discover' && discoverItems.length === 0 && !discoverLoading) {
+        runCourseraDiscoverSearch(discoverQuery);
+      }
     });
   });
 

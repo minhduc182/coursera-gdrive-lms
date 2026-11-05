@@ -261,12 +261,13 @@ async function main() {
 
   for (const cFolder of courseFolders) {
     if (cFolder.mimeType !== 'application/vnd.google-apps.folder') continue;
+    const cleanFolderTitle = formatTitle(cFolder.name.replace(/^coursera-learn-/, ''));
     const meta = COURSE_METADATA[cFolder.name] || {
       order: 99,
-      code: 'CBAP',
-      title: formatTitle(cFolder.name),
-      shortTitle: formatTitle(cFolder.name),
-      description: ''
+      code: 'COURSERA',
+      title: cleanFolderTitle,
+      shortTitle: `[Mở rộng] ${cleanFolderTitle}`,
+      description: 'Khóa học được tìm kiếm và đồng bộ trực tiếp từ danh mục Coursera gốc về Google Drive.'
     };
 
     console.log(`Scanning Course: ${cFolder.name} (${cFolder.id})...`);
