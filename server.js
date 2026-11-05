@@ -403,13 +403,24 @@ const server = http.createServer(async (req, res) => {
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = decodeURIComponent(parsedUrl.pathname);
 
-    // 0. Anti-crawler robots.txt
+    // 0. Anti-crawler robots.txt & public Duck Favicon
     if (req.method === 'GET' && pathname === '/robots.txt') {
       res.writeHead(200, {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'public, max-age=86400'
       });
       return res.end('User-agent: *\nDisallow: /\n');
+    }
+
+    if (req.method === 'GET' && (pathname === '/favicon.svg' || pathname === '/favicon.ico')) {
+      const favPath = path.join(PUBLIC_DIR, 'favicon.svg');
+      if (fs.existsSync(favPath)) {
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'public, max-age=3600'
+        });
+        return fs.createReadStream(favPath).pipe(res);
+      }
     }
 
     // 0b. Public Auth Endpoints (/api/auth/login & /api/auth/logout)
