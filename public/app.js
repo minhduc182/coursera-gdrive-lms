@@ -35,8 +35,22 @@ const SVG = {
   chevronDown: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
   chevronRight: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
   external: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`,
-  note: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`
+  note: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`,
+  download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
+  alert: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
+  folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
 };
+
+function getCourseBrandTag(course) {
+  const code = String(course?.code || '').toUpperCase();
+  if (code.startsWith('BA-')) return 'IBM · STAGE 1 BA';
+  if (code.startsWith('CBAP-')) return 'IIBA · CBAP STAGE 1';
+  if (code.startsWith('GPM-')) return 'GOOGLE · STAGE 2 PM';
+  if (code.startsWith('JIRA')) return 'ATLASSIAN · STAGE 2';
+  if (code.startsWith('REQ-')) return 'UNIV. OF ALBERTA · STAGE 2';
+  if (code.startsWith('PROD-')) return 'UVA DARDEN · STAGE 3 PRODUCT';
+  return code || 'COURSERA COURSE';
+}
 
 // ── Helpers ──────────────────────────────────────────────────
 function formatClock(sec) {
@@ -226,14 +240,15 @@ function renderCourseHome() {
 
   const st = getCourseStats(course);
   const courseNotes = state.user.notes.filter(n => n.courseId === course.id);
+  const totalCoursesCount = state.catalog.courses.length;
 
   // Left Sidebar (Authentic Coursera Course Home Left Navigation)
   const sidebarHtml = `
     <aside class="cds-home-sidebar">
       <div class="cds-home-brand-block">
-        <span class="cds-home-partner-logo">IIBA · CBAP</span>
+        <span class="cds-home-partner-logo">${escapeHtml(getCourseBrandTag(course))}</span>
         <div class="cds-home-course-name">${escapeHtml(course.title)}</div>
-        <div class="cds-home-partner-sub">Course ${course.order} of 4 · ${st.completed}/${st.total} completed</div>
+        <div class="cds-home-partner-sub">Course ${course.order} of ${totalCoursesCount} · ${st.completed}/${st.total} completed</div>
       </div>
 
       <nav class="cds-home-nav-list">
@@ -274,7 +289,7 @@ function renderCourseHome() {
         </button>
 
         <button class="cds-home-nav-btn ${state.homeSubTab === 'specialization' ? 'active' : ''}" data-nav-tab="specialization">
-          <span>Specialization (4 Courses)</span>
+          <span>All Courses (${totalCoursesCount})</span>
         </button>
       </nav>
     </aside>
@@ -452,24 +467,46 @@ function renderCourseHome() {
   } else if (state.homeSubTab === 'specialization') {
     stageInner = `
       <div class="cds-card">
-        <h1 class="cds-module-card-title">Certified Business Analysis Professional (CBAP) Specialization</h1>
-        <p style="color:var(--cds-text-secondary); margin-bottom:20px;">Select any of the 4 courses in this Specialization:</p>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+          <div>
+            <h1 class="cds-module-card-title" style="margin-bottom:4px;">Learning Roadmap Catalog (${totalCoursesCount} Courses)</h1>
+            <p style="color:var(--cds-text-secondary); font-size:14px;">
+              All ${totalCoursesCount} courses across BA (Stage 1), Project Management (Stage 2), and Digital Product Management (Stage 3) synced on Google Drive.
+            </p>
+          </div>
+          <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>${totalCoursesCount} Courses Synced</span></span>
+        </div>
         <div class="cds-downloads-list">
           ${state.catalog.courses.map(c => {
             const cSt = getCourseStats(c);
+            const isCurrent = c.id === course.id;
+            const isCourseDone = cSt.total > 0 && cSt.completed === cSt.total;
             return `
               <div class="cds-download-row">
-                <div style="max-width:600px;">
-                  <div style="font-size:12px; font-weight:700; color:var(--cds-blue); text-transform:uppercase;">Course ${c.order} of 4 · ${escapeHtml(c.code)}</div>
-                  <div style="font-size:17px; font-weight:700; margin:2px 0 4px;">${escapeHtml(c.title)}</div>
-                  <div style="font-size:13.5px; color:var(--cds-text-secondary);">${escapeHtml(c.description)}</div>
-                  <div style="font-size:13px; color:var(--cds-text-muted); margin-top:6px;">
-                    ${c.modules.length} Modules • ${c.totalVideos} Videos • ${c.totalReadings} Readings • <strong>${cSt.completed}/${cSt.total} completed (${cSt.pct}%)</strong>
+                <div class="cds-roadmap-item-left" style="max-width:620px;">
+                  <span class="cds-check-circle ${isCourseDone ? 'completed' : ''}" style="cursor:default;">
+                    ${isCourseDone ? SVG.check : `<span style="font-size:11px; font-weight:700;">${c.order}</span>`}
+                  </span>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue); text-transform:uppercase;">${escapeHtml(getCourseBrandTag(c))} · ${escapeHtml(c.code)}</span>
+                      <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Drive Synced</span></span>
+                    </div>
+                    <div style="font-size:16.5px; font-weight:700; margin:2px 0 4px; color:var(--cds-text-primary);">${escapeHtml(c.title)}</div>
+                    <div style="font-size:13.5px; color:var(--cds-text-secondary);">${escapeHtml(c.description)}</div>
+                    <div style="font-size:12.5px; color:var(--cds-text-muted); margin-top:6px;">
+                      ${c.modules.length} Modules • ${c.totalVideos} Videos • ${c.totalReadings} Readings • <strong>${cSt.completed}/${cSt.total} completed (${cSt.pct}%)</strong>
+                    </div>
                   </div>
                 </div>
-                <div style="display:flex; gap:8px;">
-                  <a class="cds-btn-outline" href="${c.folderUrl}" target="_blank" rel="noopener">Drive ↗</a>
-                  <button class="cds-btn-primary" data-switch-course="${c.id}">Open Course</button>
+                <div class="cds-roadmap-item-actions">
+                  <a class="cds-btn-outline cds-btn-sm" href="${c.folderUrl}" target="_blank" rel="noopener">
+                    ${SVG.folder}
+                    <span>Drive</span>
+                  </a>
+                  <button class="${isCurrent ? 'cds-btn-completed' : 'cds-btn-primary'} cds-btn-sm" data-switch-course="${c.id}">
+                    ${isCurrent ? `${SVG.check} <span>Active Course</span>` : `<span>Open Course</span>`}
+                  </button>
                 </div>
               </div>
             `;
@@ -1424,7 +1461,7 @@ function setupModals() {
     if (!state.catalog?.courses || !urlOrSlug) return null;
     const str = String(urlOrSlug).toLowerCase();
     if (str.includes('certified-business-analysis-professional-cbap')) {
-      return state.catalog.courses[0] || null;
+      return state.catalog.courses.find(c => String(c.code || '').startsWith('CBAP-')) || state.catalog.courses[0] || null;
     }
     const slugMatch = str.match(/\/learn\/([a-z0-9_-]+)/);
     const slug = slugMatch ? slugMatch[1] : str.replace(/^coursera-learn-/, '');
@@ -1438,7 +1475,7 @@ function setupModals() {
     roadmapDataCache = data;
     const accEl = document.getElementById('profileDriveAccountText');
     if (accEl && data.storage?.account) {
-      accEl.innerHTML = `Drive lưu trữ: <strong>${escapeHtml(data.storage.account)}</strong> · <a href="${escapeHtml(data.storage.storageRootFolderUrl || '#')}" target="_blank" rel="noopener" style="color:var(--cds-blue); text-decoration:none; font-weight:600;">Mở thư mục gốc ↗</a>`;
+      accEl.innerHTML = `Drive lưu trữ: <strong>${escapeHtml(data.storage.account)}</strong> · <a href="${escapeHtml(data.storage.storageRootFolderUrl || '#')}" target="_blank" rel="noopener" style="color:var(--cds-blue); font-weight:600;">Mở thư mục Google Drive</a>`;
     }
     return data;
   }
@@ -1482,32 +1519,58 @@ function setupModals() {
       box.innerHTML = '';
       return;
     }
-    const pct = job.totalItems > 0 ? Math.min(100, Math.round((job.completedItems / job.totalItems) * 100)) : (job.running ? 10 : 100);
+    const pct = job.totalItems > 0 ? Math.min(100, Math.round((job.completedItems / job.totalItems) * 100)) : (job.running ? 15 : 100);
     const isErr = !!job.error;
+    const cardMod = job.running ? 'cds-check-card--running' : (isErr ? 'cds-check-card--fail' : 'cds-check-card--ok');
+    const pillClass = job.running ? 'cds-status-pill--running' : (isErr ? 'cds-status-pill--error' : 'cds-status-pill--synced');
+    const pillIcon = job.running ? `<span class="cds-spinner--sm"></span>` : (isErr ? SVG.alert : SVG.check);
+    const pillText = job.running ? 'Downloading to Google Drive' : (isErr ? 'Sync Interrupted' : 'Completed & Indexed');
+
     box.innerHTML = `
-      <div class="cds-check-card ${isErr ? 'cds-check-card--fail' : 'cds-check-card--ok'}" style="margin-top:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-          <div style="font-weight:700; font-size:14.5px;">
-            ${job.running ? '⏳ Đang triển khai lấy khóa học về Drive...' : (isErr ? '⚠️ Tiến trình dừng do lỗi' : '✅ Đã lấy khóa học về Drive và đồng bộ hoàn tất!')}
+      <div class="cds-check-card ${cardMod}">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span class="cds-status-pill ${pillClass}">${pillIcon} <span>${pillText}</span></span>
+            <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">
+              ${job.running ? 'Tiến trình tải khóa học đang chạy trên máy chủ' : (isErr ? 'Tiến trình tải khóa học gặp lỗi' : 'Đã tải khóa học về Google Drive và đồng bộ danh mục')}
+            </span>
           </div>
-          <span style="font-size:13px; font-weight:700; color:var(--cds-blue);">${job.completedItems}/${job.totalItems || '?'} mục (${pct}%)</span>
+          <span style="font-size:13px; font-weight:700; color:var(--cds-blue);">
+            ${job.completedItems}/${job.totalItems || '?'} items (${pct}%)
+          </span>
         </div>
-        <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:4px;">${escapeHtml(job.statusText || '')}</div>
-        <div style="height:7px; background:#E5E7EB; border-radius:99px; overflow:hidden; margin-top:8px;">
-          <div style="height:100%; width:${pct}%; background:${isErr ? '#D92D20' : 'var(--cds-blue)'}; transition:width 0.3s;"></div>
+
+        <div style="font-size:13px; color:var(--cds-text-secondary); margin-bottom:10px;">
+          ${escapeHtml(job.statusText || '')}
         </div>
+
+        <div class="cds-progress-track">
+          <div class="cds-progress-fill ${!job.running && !isErr ? 'done' : ''} ${isErr ? 'error' : ''}" style="width:${pct}%;"></div>
+        </div>
+
         ${(job.logs && job.logs.length > 0) ? `
-          <div style="margin-top:10px; max-height:110px; overflow-y:auto; background:#F8FAFC; border:1px solid var(--cds-border-light); border-radius:4px; padding:8px 10px; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#334155;">
-            ${job.logs.slice(0, 12).map(l => `<div>${escapeHtml(l)}</div>`).join('')}
+          <div style="margin-top:12px; max-height:120px; overflow-y:auto; background:#F8FAFC; border:1px solid var(--cds-border-light); border-radius:4px; padding:8px 12px; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#334155;">
+            ${job.logs.slice(0, 14).map(l => `<div>${escapeHtml(l)}</div>`).join('')}
           </div>
         ` : ''}
       </div>
     `;
   }
 
+  function bindOpenCourseButtons(containerEl) {
+    containerEl.querySelectorAll('[data-open-existing-course]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cId = btn.getAttribute('data-open-existing-course');
+        const subTab = btn.getAttribute('data-open-subtab') || 'module';
+        profileModal.classList.add('hidden');
+        openCourseHome(cId, null, subTab);
+      });
+    });
+  }
+
   function renderProfileBody() {
     if (!roadmapDataCache) {
-      profileBody.innerHTML = `<div class="cds-empty-state">Đang tải dữ liệu hồ sơ...</div>`;
+      profileBody.innerHTML = `<div class="cds-empty-state">Loading learning roadmap and storage status...</div>`;
       return;
     }
 
@@ -1515,42 +1578,94 @@ function setupModals() {
       btn.classList.toggle('active', btn.getAttribute('data-profile-tab') === activeProfileTab);
     });
 
+    const allCourses = state.catalog?.courses || [];
+    const totalVideos = state.catalog?.specialization?.totalVideos || allCourses.reduce((s, c) => s + (c.totalVideos || 0), 0);
+    const totalReadings = state.catalog?.specialization?.totalReadings || allCourses.reduce((s, c) => s + (c.totalReadings || 0), 0);
+    const totalLessons = totalVideos + totalReadings;
+
     if (activeProfileTab === 'roadmap') {
       const stages = roadmapDataCache.stages || [];
       profileBody.innerHTML = `
-        <div style="font-size:14px; color:var(--cds-text-secondary); line-height:1.55;">
-          Lộ trình học tập cá nhân được gợi ý theo 3 giai đoạn từ <strong>Business Analyst (BA)</strong> → <strong>Project Manager (PM)</strong> → <strong>Digital Product Management (Product)</strong>. Bạn có thể bấm <em>"Kiểm tra / Lấy khóa này"</em> ở bất kỳ mục nào để chuyển sang trình lấy khóa học tự động.
+        <div class="cds-summary-banner">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>${allCourses.length} Courses Synced on Drive</span></span>
+              <span style="font-size:13px; font-weight:600; color:var(--cds-text-secondary);">
+                ${totalLessons} Lessons (${totalVideos} Videos 720p · ${totalReadings} Readings)
+              </span>
+            </div>
+            <div style="font-size:14px; color:var(--cds-text-secondary);">
+              Lộ trình 3 giai đoạn từ <strong>Business Analyst (BA)</strong> → <strong>Project Manager (PM)</strong> → <strong>Digital Product Management (Product)</strong>.
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="cds-btn-outline cds-btn-sm" type="button" id="btnSwitchToAllCourses">
+              <span>View All ${allCourses.length} Courses</span>
+            </button>
+            <button class="cds-btn-primary cds-btn-sm" type="button" id="btnSwitchToCrawlerTab">
+              ${SVG.download}
+              <span>Import Course</span>
+            </button>
+          </div>
         </div>
+
         ${stages.map(st => `
           <div class="cds-roadmap-stage">
             <div class="cds-roadmap-stage-head">
               <div class="cds-roadmap-stage-title">${escapeHtml(st.title)}</div>
               <span class="cds-roadmap-stage-badge">${escapeHtml(st.duration)}</span>
             </div>
-            <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-bottom:6px;">${escapeHtml(st.description)}</div>
-            <div>
+            <div style="font-size:13.5px; color:var(--cds-text-secondary);">${escapeHtml(st.description)}</div>
+
+            <div class="cds-roadmap-list">
               ${(st.items || []).map(item => {
+                const isCbapSpec = String(item.url || '').includes('certified-business-analysis-professional-cbap');
                 const existingCourse = isCourseInCatalog(item.url);
+                const cSt = existingCourse ? getCourseStats(existingCourse) : null;
+
                 return `
                   <div class="cds-roadmap-item">
-                    <div style="flex:1; min-width:0;">
-                      <div style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">
-                        ${escapeHtml(item.title)}
+                    <div class="cds-roadmap-item-left">
+                      <span class="cds-check-circle ${existingCourse ? 'completed' : ''}" style="cursor:default;">
+                        ${existingCourse ? SVG.check : SVG.bookOutline}
+                      </span>
+                      <div style="min-width:0; flex:1;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                          <span style="font-weight:700; font-size:15px; color:var(--cds-text-primary);">
+                            ${escapeHtml(item.title)}
+                          </span>
+                          ${existingCourse ? `
+                            <span class="cds-status-pill cds-status-pill--synced">
+                              ${SVG.check}
+                              <span>${isCbapSpec ? '4 Courses Synced' : `${escapeHtml(existingCourse.code)} · Synced`}</span>
+                            </span>
+                          ` : `
+                            <span class="cds-status-pill cds-status-pill--neutral">Not Downloaded</span>
+                          `}
+                        </div>
+
+                        <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:3px;">
+                          <strong>${escapeHtml(item.provider)}</strong> • ${escapeHtml(item.duration)} • ${escapeHtml(item.level)}
+                          ${existingCourse && !isCbapSpec ? ` • ${existingCourse.modules.length} Modules • ${existingCourse.totalVideos} Videos • ${existingCourse.totalReadings} Readings • <strong>${cSt.completed}/${cSt.total} completed (${cSt.pct}%)</strong>` : ''}
+                        </div>
+
+                        ${item.note ? `<div style="font-size:12.5px; color:var(--cds-text-muted); margin-top:3px;">${escapeHtml(item.note)}</div>` : ''}
                       </div>
-                      <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
-                        <strong>${escapeHtml(item.provider)}</strong> · ${escapeHtml(item.duration)} · Mức: ${escapeHtml(item.level)}
-                        · <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" style="color:var(--cds-blue); text-decoration:none;">Link Coursera ↗</a>
-                      </div>
-                      ${item.note ? `<div style="font-size:12.5px; color:#475467; margin-top:3px;">${escapeHtml(item.note)}</div>` : ''}
                     </div>
-                    <div style="flex-shrink:0; display:flex; align-items:center; gap:8px;">
+
+                    <div class="cds-roadmap-item-actions">
+                      <a class="cds-btn-outline cds-btn-sm" href="${escapeHtml(existingCourse ? existingCourse.folderUrl : item.url)}" target="_blank" rel="noopener" title="${existingCourse ? 'Mở thư mục Google Drive' : 'Xem trang gốc trên Coursera'}">
+                        ${existingCourse ? SVG.folder : SVG.external}
+                        <span>${existingCourse ? 'Drive' : 'Coursera'}</span>
+                      </a>
                       ${existingCourse ? `
-                        <button class="cds-btn-outline-sm" type="button" data-open-existing-course="${existingCourse.id}" style="border-color:var(--cds-green); color:var(--cds-green);">
-                          ✓ Đã có (Mở học)
+                        <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${existingCourse.id}" data-open-subtab="${isCbapSpec ? 'specialization' : 'module'}">
+                          <span>${isCbapSpec ? 'View 4 Courses' : 'Open Course'}</span>
                         </button>
                       ` : `
-                        <button class="cds-btn-primary" type="button" data-quick-check-url="${escapeHtml(item.url)}" style="padding:6px 12px; font-size:12.5px;">
-                          Kiểm tra / Lấy khóa này
+                        <button class="cds-btn-primary cds-btn-sm" type="button" data-quick-check-url="${escapeHtml(item.url)}">
+                          ${SVG.download}
+                          <span>Check &amp; Import</span>
                         </button>
                       `}
                     </div>
@@ -1562,13 +1677,17 @@ function setupModals() {
         `).join('')}
       `;
 
-      profileBody.querySelectorAll('[data-open-existing-course]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const cId = btn.getAttribute('data-open-existing-course');
-          profileModal.classList.add('hidden');
-          openCourseHome(cId, null, 'module');
-        });
+      document.getElementById('btnSwitchToAllCourses')?.addEventListener('click', () => {
+        profileModal.classList.add('hidden');
+        openCourseHome(state.activeCourseId, state.activeModuleId, 'specialization');
       });
+
+      document.getElementById('btnSwitchToCrawlerTab')?.addEventListener('click', () => {
+        activeProfileTab = 'crawler';
+        renderProfileBody();
+      });
+
+      bindOpenCourseButtons(profileBody);
 
       profileBody.querySelectorAll('[data-quick-check-url]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1581,41 +1700,103 @@ function setupModals() {
       return;
     }
 
-    // Tab 2: Get khóa học (Coursera)
+    // Tab 2: Tải khóa học & Trạng thái kho lưu trữ
     const uncrawlable = roadmapDataCache.uncrawlableCourses || [];
     profileBody.innerHTML = `
+      <!-- 1. Coursera URL Check & Import Box -->
       <div class="cds-crawler-box">
-        <div style="font-weight:700; font-size:15px; color:var(--cds-text-primary);">
-          Lấy khóa học từ Coursera về Google Drive (${escapeHtml(roadmapDataCache.storage?.account || 'duc.to.dev@gmail.com')})
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:700; font-size:16.5px; color:var(--cds-text-primary);">
+              Import Course from Coursera to Google Drive
+            </div>
+            <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-top:2px;">
+              Paste a Coursera course (<code>/learn/...</code>) or specialization URL to verify open access and sync 720p videos, subtitles (.srt), and readings (.html) directly to <strong>${escapeHtml(roadmapDataCache.storage?.account || 'duc.to.dev@gmail.com')}</strong>.
+            </div>
+          </div>
+          <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Drive Connected</span></span>
         </div>
-        <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:3px;">
-          Quy trình: Dán link khóa học (<code>/learn/...</code>) hoặc chuyên ngành (<code>/specializations/...</code>, <code>/professional-certificates/...</code>) → Hệ thống kiểm tra khả năng crawl → Nếu lấy được sẽ cho phép triển khai đẩy thẳng về Drive; nếu bị khóa sẽ lưu vào bảng thông tin bên dưới.
-        </div>
+
         <div class="cds-crawler-input-row">
-          <input type="text" id="courseraUrlInput" class="cds-crawler-input" value="${escapeHtml(pendingCheckUrl)}" placeholder="Paste link khóa học Coursera (VD: https://www.coursera.org/learn/project-management-foundations)..." />
-          <button class="cds-btn-primary" id="btnCheckCourseraUrl" type="button" style="padding:9px 18px;">Kiểm tra (Check)</button>
+          <input type="text" id="courseraUrlInput" class="cds-crawler-input" value="${escapeHtml(pendingCheckUrl)}" placeholder="https://www.coursera.org/learn/project-management-foundations" />
+          <button class="cds-btn-primary" id="btnCheckCourseraUrl" type="button">
+            <span>Check Course</span>
+          </button>
         </div>
+
         <div id="courseraCheckResultBox"></div>
         <div id="crawlJobStatusContainer"></div>
       </div>
 
-      <div style="margin-top:6px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <h4 style="margin:0; font-size:15px; font-weight:700;">Bảng thông tin các khóa học không thể lấy (${uncrawlable.length})</h4>
+      <!-- 2. Synced Courses Inventory & Status on Google Drive -->
+      <div class="cds-roadmap-stage">
+        <div class="cds-roadmap-stage-head" style="margin-bottom:10px;">
+          <div>
+            <div class="cds-roadmap-stage-title">Kho khóa học đã đồng bộ trên Google Drive (${allCourses.length} khóa)</div>
+            <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+              Trạng thái toàn bộ khóa học đã tải về thư mục gốc trên Drive — bấm <strong>Open Course</strong> để vào học ngay.
+            </div>
+          </div>
+          <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>${allCourses.length}/19 Ready</span></span>
         </div>
+
+        <div class="cds-downloads-list" style="max-height:320px; overflow-y:auto;">
+          ${allCourses.map(c => {
+            const cSt = getCourseStats(c);
+            return `
+              <div class="cds-download-row">
+                <div class="cds-roadmap-item-left">
+                  <span class="cds-check-circle completed" style="cursor:default;">${SVG.check}</span>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue);">${escapeHtml(c.code)}</span>
+                      <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">${escapeHtml(c.title)}</span>
+                      <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Synced</span></span>
+                    </div>
+                    <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                      ${c.modules.length} Modules • ${c.totalVideos} Videos 720p • ${c.totalReadings} Readings • Tiến độ: <strong>${cSt.completed}/${cSt.total} (${cSt.pct}%)</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="cds-roadmap-item-actions">
+                  <a class="cds-btn-outline cds-btn-sm" href="${c.folderUrl}" target="_blank" rel="noopener">
+                    ${SVG.folder}
+                    <span>Drive</span>
+                  </a>
+                  <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${c.id}">
+                    <span>Open Course</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- 3. Uncrawlable Courses Table -->
+      <div class="cds-roadmap-stage">
+        <div class="cds-roadmap-stage-head" style="margin-bottom:10px;">
+          <div>
+            <div class="cds-roadmap-stage-title">Danh sách khóa học không thể tải tự động (${uncrawlable.length})</div>
+            <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+              Các khóa học yêu cầu thanh toán trước hoặc khóa quyền xem trước video trên Coursera sẽ tự động lưu tại đây.
+            </div>
+          </div>
+        </div>
+
         ${uncrawlable.length === 0 ? `
-          <div style="border:1px solid var(--cds-border-light); border-radius:6px; padding:18px; text-align:center; font-size:13.5px; color:var(--cds-text-muted); background:#FFFFFF;">
-            Chưa có khóa học nào bị lỗi hoặc từ chối quyền truy cập.
+          <div style="border:1px solid var(--cds-border-light); border-radius:6px; padding:18px; text-align:center; font-size:13.5px; color:var(--cds-text-muted); background:#FAFBFC;">
+            Tất cả khóa học đã kiểm tra đều tải thành công (0 khóa bị chặn).
           </div>
         ` : `
           <div style="border:1px solid var(--cds-border-light); border-radius:6px; overflow:hidden; background:#FFFFFF;">
             <table class="cds-uncrawlable-table">
               <thead>
                 <tr>
-                  <th style="width:28%;">Khóa học / Slug</th>
-                  <th style="width:45%;">Lý do không thể lấy</th>
-                  <th style="width:17%;">Thời gian check</th>
-                  <th style="width:10%;">Thao tác</th>
+                  <th style="width:30%;">Course / URL</th>
+                  <th style="width:42%;">Reason</th>
+                  <th style="width:16%;">Checked At</th>
+                  <th style="width:12%;">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -1625,10 +1806,10 @@ function setupModals() {
                       <div style="font-weight:700; color:var(--cds-text-primary);">${escapeHtml(u.title || u.slug)}</div>
                       <a href="${escapeHtml(u.url)}" target="_blank" rel="noopener" style="font-size:12px; color:var(--cds-blue); word-break:break-all;">${escapeHtml(u.url)}</a>
                     </td>
-                    <td style="color:#B42318; font-weight:500;">${escapeHtml(u.reason)}</td>
+                    <td style="color:#B42318; font-weight:600;">${escapeHtml(u.reason)}</td>
                     <td style="font-size:12px; color:var(--cds-text-secondary);">${u.checkedAt ? new Date(u.checkedAt).toLocaleString('vi-VN') : ''}</td>
                     <td>
-                      <button class="cds-btn-outline-sm" type="button" data-delete-uncrawl="${escapeHtml(u.id)}" style="padding:3px 8px; font-size:12px;">Xóa</button>
+                      <button class="cds-btn-outline cds-btn-sm" type="button" data-delete-uncrawl="${escapeHtml(u.id)}">Remove</button>
                     </td>
                   </tr>
                 `).join('')}
@@ -1644,6 +1825,8 @@ function setupModals() {
     if (roadmapDataCache.crawlJob?.running && !crawlPollTimer) {
       startCrawlPolling();
     }
+
+    bindOpenCourseButtons(profileBody);
 
     const inputEl = document.getElementById('courseraUrlInput');
     const btnCheck = document.getElementById('btnCheckCourseraUrl');
@@ -1679,8 +1862,9 @@ function setupModals() {
 
     if (lastCheckResult.loading) {
       box.innerHTML = `
-        <div class="cds-check-card" style="color:var(--cds-text-secondary); font-size:14px;">
-          🔍 Đang kết nối tới Coursera API để kiểm tra khả năng lấy video 720p, phụ đề và bài đọc cho <strong>${escapeHtml(lastCheckResult.url)}</strong>...
+        <div class="cds-check-card cds-check-card--running" style="display:flex; align-items:center; gap:12px; color:var(--cds-text-secondary); font-size:14px;">
+          <span class="cds-spinner--sm"></span>
+          <span>Đang kiểm tra cấu trúc khóa học, luồng video 720p, phụ đề (.srt) và bài đọc cho <strong>${escapeHtml(lastCheckResult.url)}</strong>...</span>
         </div>
       `;
       return;
@@ -1692,9 +1876,16 @@ function setupModals() {
     if (!res.crawlable) {
       box.innerHTML = `
         <div class="cds-check-card cds-check-card--fail">
-          <div style="font-weight:700; font-size:15px; color:#B42318;">✕ Không thể lấy tự động khóa học này</div>
-          <div style="font-size:13.5px; color:var(--cds-text-primary); margin-top:4px;"><strong>${escapeHtml(res.title || res.inputUrl)}</strong>: ${escapeHtml(res.reason)}</div>
-          <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:6px;">Hệ thống đã tự động ghi nhận khóa học này vào <em>"Bảng thông tin các khóa học không thể lấy"</em> bên dưới.</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="cds-status-pill cds-status-pill--error">${SVG.alert} <span>Cannot Import</span></span>
+            <span style="font-weight:700; font-size:15px; color:#B42318;">Không thể tải tự động khóa học này</span>
+          </div>
+          <div style="font-size:13.5px; color:var(--cds-text-primary); margin-top:6px;">
+            <strong>${escapeHtml(res.title || res.inputUrl)}</strong>: ${escapeHtml(res.reason)}
+          </div>
+          <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:4px;">
+            Đã tự động lưu vào danh sách khóa học bị giới hạn quyền truy cập bên dưới.
+          </div>
         </div>
       `;
       return;
@@ -1705,39 +1896,58 @@ function setupModals() {
 
     box.innerHTML = `
       <div class="cds-check-card cds-check-card--ok">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
           <div>
-            <div style="font-weight:700; font-size:15.5px; color:var(--cds-green);">✓ Có thể lấy khóa học này về Google Drive!</div>
-            <div style="font-size:13.5px; color:var(--cds-text-secondary); margin-top:2px;">${escapeHtml(res.title)} — ${escapeHtml(res.reason)}</div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Ready to Import</span></span>
+              <span style="font-weight:700; font-size:15.5px; color:var(--cds-text-primary);">${escapeHtml(res.title)}</span>
+            </div>
+            <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:3px;">${escapeHtml(res.reason)}</div>
           </div>
           ${crawlableSlugs.length > 1 ? `
-            <button class="cds-btn-primary" type="button" data-deploy-slugs="${escapeHtml(crawlableSlugs.join(','))}">
-              Triển khai lấy toàn bộ (${crawlableSlugs.length} khóa)
+            <button class="cds-btn-primary cds-btn-sm" type="button" data-deploy-slugs="${escapeHtml(crawlableSlugs.join(','))}">
+              ${SVG.download}
+              <span>Import All (${crawlableSlugs.length} Courses)</span>
             </button>
           ` : ''}
         </div>
 
-        <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <div class="cds-downloads-list">
           ${courses.map(c => {
             const alreadyIn = isCourseInCatalog(c.slug);
             return `
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid var(--cds-border-light); border-radius:6px; background:#FAFBFC;">
-                <div style="min-width:0; flex:1;">
-                  <div style="font-weight:700; font-size:14px; color:var(--cds-text-primary);">${escapeHtml(c.title)} <code style="font-size:12px; color:#475467;">(${escapeHtml(c.slug)})</code></div>
-                  <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
-                    ${c.crawlable
-                      ? `${c.modulesCount} modules · <strong>${c.unlockedLectures}/${c.totalLectures}</strong> video 720p · <strong>${c.readingsCount}</strong> bài đọc · Phụ đề: ${c.hasEnSub ? 'EN' : ''}${c.hasViSub ? ' + VI' : ''}`
-                      : `<span style="color:#B42318;">Không lấy được: ${escapeHtml(c.reason)}</span>`
-                    }
+              <div class="cds-download-row">
+                <div class="cds-roadmap-item-left">
+                  <span class="cds-check-circle ${c.crawlable ? 'completed' : ''}" style="cursor:default;">
+                    ${c.crawlable ? SVG.check : SVG.alert}
+                  </span>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">${escapeHtml(c.title)}</span>
+                      <code style="font-size:12px; color:var(--cds-text-secondary); background:#F2F4F7; padding:1px 6px; border-radius:4px;">${escapeHtml(c.slug)}</code>
+                      ${alreadyIn ? `<span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Already on Drive</span></span>` : ''}
+                    </div>
+                    <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:3px;">
+                      ${c.crawlable
+                        ? `${c.modulesCount} Modules • <strong>${c.unlockedLectures}/${c.totalLectures}</strong> Videos 720p • <strong>${c.readingsCount}</strong> Readings • Subtitles: ${c.hasEnSub ? 'EN' : ''}${c.hasViSub ? ' + VI' : ''}`
+                        : `<span style="color:#B42318; font-weight:600;">Blocked: ${escapeHtml(c.reason)}</span>`
+                      }
+                    </div>
                   </div>
                 </div>
-                <div style="flex-shrink:0;">
+                <div class="cds-roadmap-item-actions">
+                  ${alreadyIn ? `
+                    <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${alreadyIn.id}">
+                      <span>Open Course</span>
+                    </button>
+                  ` : ''}
                   ${c.crawlable ? `
-                    <button class="cds-btn-primary" type="button" data-deploy-slugs="${escapeHtml(c.slug)}" style="padding:6px 14px; font-size:13px;">
-                      ${alreadyIn ? 'Cập nhật / Lấy lại khóa này' : 'Triển khai lấy khóa học'}
+                    <button class="${alreadyIn ? 'cds-btn-outline' : 'cds-btn-primary'} cds-btn-sm" type="button" data-deploy-slugs="${escapeHtml(c.slug)}">
+                      ${SVG.download}
+                      <span>${alreadyIn ? 'Re-sync' : 'Download to Drive'}</span>
                     </button>
                   ` : `
-                    <span style="font-size:12px; font-weight:700; color:#B42318;">Đã lưu bảng lỗi</span>
+                    <span class="cds-status-pill cds-status-pill--error">Logged</span>
                   `}
                 </div>
               </div>
@@ -1747,6 +1957,8 @@ function setupModals() {
       </div>
     `;
 
+    bindOpenCourseButtons(box);
+
     box.querySelectorAll('[data-deploy-slugs]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const rawSlugs = btn.getAttribute('data-deploy-slugs') || '';
@@ -1754,7 +1966,7 @@ function setupModals() {
         if (slugs.length === 0) return;
         try {
           btn.disabled = true;
-          btn.textContent = 'Đang khởi chạy...';
+          btn.innerHTML = `<span class="cds-spinner--sm"></span> <span>Starting...</span>`;
           const resp = await apiPost('/api/coursera/import', { slugs });
           roadmapDataCache.crawlJob = resp.job;
           renderCrawlJobBox(resp.job);
@@ -1762,7 +1974,7 @@ function setupModals() {
         } catch (err) {
           alert('Không thể khởi chạy: ' + err.message);
           btn.disabled = false;
-          btn.textContent = 'Triển khai lấy khóa học';
+          btn.innerHTML = `${SVG.download} <span>Download to Drive</span>`;
         }
       });
     });
