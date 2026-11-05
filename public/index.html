@@ -38,7 +38,7 @@
       <!-- Coursera Search Box -->
       <div class="cds-header-center">
         <div class="cds-search-bar" id="btnOpenSearch">
-          <input type="text" readonly placeholder="Search in course..." />
+          <input type="text" readonly placeholder="Search in courses or Explore Coursera.org..." />
           <span class="cds-kbd">Ctrl K</span>
           <button class="cds-search-circle-btn" aria-label="Search">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -137,12 +137,15 @@
           </svg>
           <input type="text" id="searchInput" placeholder="Search for concepts, video transcripts (.srt) or readings (.html)..." autocomplete="off" />
           <select id="searchCourseFilter" class="cds-select-sm">
-            <option value="">All Courses</option>
+            <option value="">All Synced Courses</option>
           </select>
+          <button class="cds-btn-primary cds-btn-sm" id="btnSwitchSearchToCourseraShop" type="button" title="Tìm kiếm &amp; Shopping trên toàn bộ danh mục Coursera.org gốc">
+            <span>Search All Coursera.org</span>
+          </button>
           <button class="cds-icon-close" id="btnCloseSearch">✕</button>
         </div>
         <div id="searchResultsContainer" class="cds-modal-body">
-          <div class="cds-empty-state">Type at least 2 characters to search across lesson titles, reading materials (.html), and video subtitles (.srt).</div>
+          <div class="cds-empty-state">Type at least 2 characters to search across lesson titles, reading materials (.html), and video subtitles (.srt), or click <strong>Search All Coursera.org</strong> to shop across Coursera's global catalog.</div>
         </div>
       </div>
     </div>

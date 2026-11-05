@@ -38,7 +38,8 @@ const SVG = {
   note: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`,
   download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
   alert: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
-  folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`
+  folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
+  compass: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>`
 };
 
 function getCourseBrandTag(course) {
@@ -1590,7 +1591,10 @@ function setupModals() {
   let crawlPollTimer = null;
 
   // Coursera Discovery / Shopping state
-  let discoverQuery = 'business analysis';
+  let discoverQuery = 'artificial intelligence';
+  let discoverPage = 1;
+  let discoverHasMore = true;
+  let discoverLoadingMore = false;
   let discoverTypeFilter = 'ALL';
   let discoverViOnly = false;
   let discoverItems = [];
@@ -1599,31 +1603,54 @@ function setupModals() {
   const inlineCheckMap = {}; // url -> { loading, data }
 
   const QUICK_TOPICS = [
-    { q: 'business analysis', label: 'Business Analysis' },
+    { q: 'artificial intelligence', label: 'AI & Generative AI' },
+    { q: 'python data science', label: 'Python & Data Science' },
+    { q: 'software architecture cloud aws', label: 'Cloud, AWS & Architecture' },
     { q: 'product management', label: 'Product Management' },
+    { q: 'business analysis', label: 'Business Analysis' },
     { q: 'project management', label: 'Project Management' },
-    { q: 'agile scrum jira', label: 'Agile, Scrum & Jira' },
-    { q: 'sql data analytics', label: 'SQL & Data Analytics' },
-    { q: 'power bi tableau', label: 'Power BI & Tableau' },
-    { q: 'ux product design', label: 'UX & Product Design' },
-    { q: 'generative ai product', label: 'Generative AI' }
+    { q: 'ux design figma', label: 'UI/UX & Figma' },
+    { q: 'sql power bi tableau', label: 'SQL, Power BI & Tableau' },
+    { q: 'cybersecurity devops', label: 'Cybersecurity & DevOps' },
+    { q: 'financial analysis fintech', label: 'Finance & FinTech' },
+    { q: 'digital marketing growth', label: 'Digital Marketing' }
   ];
 
-  async function runCourseraDiscoverSearch(queryStr) {
-    const q = String(queryStr ?? discoverQuery).trim() || 'business analysis';
-    discoverQuery = q;
-    discoverLoading = true;
-    discoverError = '';
+  async function runCourseraDiscoverSearch(queryStr, appendPage = false) {
+    const q = String(queryStr ?? discoverQuery).trim() || 'artificial intelligence';
+    if (!appendPage) {
+      discoverQuery = q;
+      discoverPage = 1;
+      discoverLoading = true;
+      discoverError = '';
+    } else {
+      discoverPage += 1;
+      discoverLoadingMore = true;
+    }
     if (!profileModal.classList.contains('hidden') && activeProfileTab === 'discover') {
       renderProfileBody();
     }
     try {
-      const res = await apiGet(`/api/coursera/discover?q=${encodeURIComponent(q)}`);
-      discoverItems = res.items || [];
+      const res = await apiGet(`/api/coursera/discover?q=${encodeURIComponent(discoverQuery)}&page=${discoverPage}`);
+      const newItems = res.items || [];
+      discoverHasMore = newItems.length >= 10;
+      if (!appendPage) {
+        discoverItems = newItems;
+      } else {
+        const existingUrls = new Set(discoverItems.map(x => x.url));
+        for (const it of newItems) {
+          if (!existingUrls.has(it.url)) {
+            existingUrls.add(it.url);
+            discoverItems.push(it);
+          }
+        }
+      }
       discoverLoading = false;
+      discoverLoadingMore = false;
     } catch (err) {
       discoverError = err.message || 'Không thể kết nối danh mục Coursera.';
       discoverLoading = false;
+      discoverLoadingMore = false;
     }
     if (!profileModal.classList.contains('hidden') && activeProfileTab === 'discover') {
       renderProfileBody();
@@ -2089,6 +2116,14 @@ function setupModals() {
                 `;
               }).join('')}
             </div>
+
+            ${discoverHasMore ? `
+              <div style="display:flex; justify-content:center; margin-top:20px;">
+                <button class="cds-btn-outline" type="button" id="btnDiscoverLoadMore" ${discoverLoadingMore ? 'disabled' : ''}>
+                  ${discoverLoadingMore ? `<span class="cds-spinner--sm"></span> <span>Đang tải thêm từ Coursera.org...</span>` : `<span>Xem thêm kết quả từ Coursera.org (Trang tiếp theo)</span>`}
+                </button>
+              </div>
+            ` : ''}
           `}
         </div>
       `;
@@ -2104,15 +2139,19 @@ function setupModals() {
       const discBtn = document.getElementById('btnDiscoverSearch');
       const discType = document.getElementById('discoverTypeSelect');
       const discVi = document.getElementById('discoverViCheck');
+      const btnLoadMore = document.getElementById('btnDiscoverLoadMore');
 
       discBtn?.addEventListener('click', () => {
-        runCourseraDiscoverSearch(discInput?.value || '');
+        runCourseraDiscoverSearch(discInput?.value || '', false);
       });
       discInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          runCourseraDiscoverSearch(discInput.value || '');
+          runCourseraDiscoverSearch(discInput.value || '', false);
         }
+      });
+      btnLoadMore?.addEventListener('click', () => {
+        runCourseraDiscoverSearch(discoverQuery, true);
       });
       discType?.addEventListener('change', () => {
         discoverTypeFilter = discType.value;
@@ -2519,8 +2558,17 @@ function setupModals() {
     await loadProfileData();
     renderProfileBody();
     if (discoverItems.length === 0 && !discoverLoading) {
-      runCourseraDiscoverSearch(discoverQuery);
+      runCourseraDiscoverSearch(discoverQuery, false);
     }
+  });
+
+  document.getElementById('btnSwitchSearchToCourseraShop')?.addEventListener('click', async () => {
+    const qFromSearch = searchInput?.value?.trim() || discoverQuery;
+    closeSearch();
+    activeProfileTab = 'discover';
+    profileModal.classList.remove('hidden');
+    await loadProfileData();
+    runCourseraDiscoverSearch(qFromSearch, false);
   });
 
   document.querySelectorAll('[data-profile-tab]').forEach(btn => {

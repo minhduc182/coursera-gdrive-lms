@@ -850,11 +850,13 @@ const server = http.createServer(async (req, res) => {
 
     // 14. GET /api/roadmap & Coursera Crawler APIs
     if (req.method === 'GET' && pathname === '/api/coursera/discover') {
-      const q = (parsedUrl.searchParams.get('q') || '').trim() || 'business analysis';
-      const items = await searchCourseraCatalog(q);
+      const q = (parsedUrl.searchParams.get('q') || '').trim() || 'artificial intelligence';
+      const page = parseInt(parsedUrl.searchParams.get('page') || '1', 10) || 1;
+      const items = await searchCourseraCatalog(q, page);
       return sendJson(res, 200, {
         ok: true,
         query: q,
+        page,
         count: items.length,
         items
       });
