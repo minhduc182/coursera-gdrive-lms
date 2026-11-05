@@ -56,9 +56,73 @@ function loadCatalog() {
   }
 }
 
+const LEGACY_SECTION_MAP = {
+  '12Z36kp_ZEE1o--iOS59vrHgpWQDnXQ1A_1egKHG-wrQnyJZGyJ3W65vreAicqbRWMm':
+    '1XGpk238x_Yodn35NPZrQ-XOly1lrrDXc_1_aLQxaLUfQnR6YLqeMRpIuFmRo4gfBVr',
+  '12Z36kp_ZEE1o--iOS59vrHgpWQDnXQ1A_1PCHDgFNJ_O4xJTVBCEaTOUiHblWhoES0':
+    '1XGpk238x_Yodn35NPZrQ-XOly1lrrDXc_1cOD3DZTUf3ImcgUZMY2sKvW0-JUNK1Nj'
+};
+
+function getLessonStableKey(course, mod, sec, les) {
+  return `${course.slug}/${mod.name}/${sec.name}/${les.prefix}`;
+}
+
+function reconcileUserState(state) {
+  let mutated = false;
+  if (!state.progress || typeof state.progress !== 'object') {
+    state.progress = {};
+    mutated = true;
+  }
+  if (!state.progressBySlug || typeof state.progressBySlug !== 'object') {
+    state.progressBySlug = {};
+    mutated = true;
+  }
+
+  // 1. Migrate legacy Drive folder IDs from minhduc.to1808 -> duc.to.dev
+  for (const [oldPrefix, newPrefix] of Object.entries(LEGACY_SECTION_MAP)) {
+    for (const key of Object.keys(state.progress)) {
+      if (key.startsWith(oldPrefix + '_')) {
+        const suffix = key.slice(oldPrefix.length);
+        const mappedKey = `${newPrefix}${suffix}`;
+        if (!state.progress[mappedKey]) {
+          state.progress[mappedKey] = state.progress[key];
+        }
+        delete state.progress[key];
+        mutated = true;
+      }
+    }
+  }
+
+  // 2. Sync between lesson.id and stable slug key so folder ID changes never lose completion status
+  const catalog = loadCatalog();
+  if (catalog && Array.isArray(catalog.courses)) {
+    for (const course of catalog.courses) {
+      for (const mod of course.modules || []) {
+        for (const sec of mod.sections || []) {
+          for (const les of sec.lessons || []) {
+            const stableKey = getLessonStableKey(course, mod, sec, les);
+            const byId = state.progress[les.id];
+            const bySlug = state.progressBySlug[stableKey];
+            if (byId && (!bySlug || (byId.status === 'completed' && bySlug.status !== 'completed'))) {
+              state.progressBySlug[stableKey] = byId;
+              mutated = true;
+            } else if (!byId && bySlug) {
+              state.progress[les.id] = bySlug;
+              mutated = true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return mutated;
+}
+
 function loadUserState() {
   const defaultState = {
     progress: {},
+    progressBySlug: {},
     notes: [],
     bookmarks: [],
     uncrawlableCourses: [],
@@ -76,12 +140,16 @@ function loadUserState() {
   }
   try {
     const raw = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'));
-    return {
+    const merged = {
       ...defaultState,
       ...raw,
       uncrawlableCourses: Array.isArray(raw.uncrawlableCourses) ? raw.uncrawlableCourses : [],
       preferences: { ...defaultState.preferences, ...(raw.preferences || {}) }
     };
+    if (reconcileUserState(merged)) {
+      fs.writeFileSync(STATE_PATH, JSON.stringify(merged, null, 2), 'utf8');
+    }
+    return merged;
   } catch (e) {
     return defaultState;
   }
@@ -449,13 +517,21 @@ const server = http.createServer(async (req, res) => {
       const prev = state.progress[lessonId] || { status: 'not_started', currentTime: 0 };
 
       const nextStatus = status || prev.status || 'in_progress';
-      state.progress[lessonId] = {
+      const entry = {
         status: nextStatus,
         currentTime: typeof currentTime === 'number' ? Math.round(currentTime) : (prev.currentTime || 0),
         duration: typeof duration === 'number' ? Math.round(duration) : (prev.duration || 0),
         completedAt: nextStatus === 'completed' ? (prev.completedAt || new Date().toISOString()) : null,
         updatedAt: new Date().toISOString()
       };
+      state.progress[lessonId] = entry;
+
+      const catalog = loadCatalog();
+      const found = findLessonById(catalog, lessonId);
+      if (found) {
+        const stableKey = getLessonStableKey(found.course, found.module, found.section, found.lesson);
+        state.progressBySlug[stableKey] = entry;
+      }
 
       if (courseId) {
         state.lastVisited = {
@@ -467,6 +543,46 @@ const server = http.createServer(async (req, res) => {
 
       saveUserState(state);
       return sendJson(res, 200, { ok: true, progress: state.progress[lessonId], lastVisited: state.lastVisited });
+    }
+
+    // 3b. POST /api/progress/batch (Mark entire course or module as completed / not_started)
+    if (req.method === 'POST' && pathname === '/api/progress/batch') {
+      const body = await readJsonBody(req);
+      const { courseId, moduleId, status } = body;
+      if (!courseId || !status) {
+        return sendJson(res, 400, { error: 'courseId and status required' });
+      }
+
+      const catalog = loadCatalog();
+      const course = catalog?.courses?.find(c => c.id === courseId);
+      if (!course) {
+        return sendJson(res, 404, { error: 'Course not found' });
+      }
+
+      const state = loadUserState();
+      const nowIso = new Date().toISOString();
+
+      for (const mod of course.modules || []) {
+        if (moduleId && mod.id !== moduleId) continue;
+        for (const sec of mod.sections || []) {
+          for (const les of sec.lessons || []) {
+            const prev = state.progress[les.id] || { currentTime: 0 };
+            const entry = {
+              status,
+              currentTime: status === 'completed' ? (les.durationSec || prev.currentTime || 0) : 0,
+              duration: les.durationSec || prev.duration || 0,
+              completedAt: status === 'completed' ? (prev.completedAt || nowIso) : null,
+              updatedAt: nowIso
+            };
+            state.progress[les.id] = entry;
+            const stableKey = getLessonStableKey(course, mod, sec, les);
+            state.progressBySlug[stableKey] = entry;
+          }
+        }
+      }
+
+      saveUserState(state);
+      return sendJson(res, 200, { ok: true, progress: state.progress });
     }
 
     // 4. POST /api/last-visited

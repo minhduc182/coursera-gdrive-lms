@@ -241,6 +241,7 @@ function renderCourseHome() {
   const st = getCourseStats(course);
   const courseNotes = state.user.notes.filter(n => n.courseId === course.id);
   const totalCoursesCount = state.catalog.courses.length;
+  const courseIdx = Math.max(0, state.catalog.courses.findIndex(c => c.id === course.id));
 
   // Left Sidebar (Authentic Coursera Course Home Left Navigation)
   const sidebarHtml = `
@@ -248,7 +249,7 @@ function renderCourseHome() {
       <div class="cds-home-brand-block">
         <span class="cds-home-partner-logo">${escapeHtml(getCourseBrandTag(course))}</span>
         <div class="cds-home-course-name">${escapeHtml(course.title)}</div>
-        <div class="cds-home-partner-sub">Course ${course.order} of ${totalCoursesCount} · ${st.completed}/${st.total} completed</div>
+        <div class="cds-home-partner-sub">Course ${courseIdx + 1} of ${totalCoursesCount} · ${st.completed}/${st.total} completed (${st.pct}%)</div>
       </div>
 
       <nav class="cds-home-nav-list">
@@ -373,13 +374,19 @@ function renderCourseHome() {
       `;
     }).join('');
 
+    const isModDone = mTotal > 0 && mDone === mTotal;
     stageInner = `
       <div class="cds-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
           <h1 class="cds-module-card-title">Module ${activeMod.index}: ${escapeHtml(activeMod.title)}</h1>
-          <span style="font-size:13.5px; font-weight:600; color:${mDone === mTotal ? 'var(--cds-green)' : 'var(--cds-text-secondary)'};">
-            ${mDone}/${mTotal} completed
-          </span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:13.5px; font-weight:600; color:${isModDone ? 'var(--cds-green)' : 'var(--cds-text-secondary)'};">
+              ${mDone}/${mTotal} completed
+            </span>
+            <button class="${isModDone ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" type="button" data-toggle-mod-complete="${activeMod.id}">
+              ${isModDone ? `${SVG.check} <span>Module Completed</span>` : `<span>Mark module completed</span>`}
+            </button>
+          </div>
         </div>
 
         <div class="cds-module-stats-bar">
@@ -477,20 +484,22 @@ function renderCourseHome() {
           <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>${totalCoursesCount} Courses Synced</span></span>
         </div>
         <div class="cds-downloads-list">
-          ${state.catalog.courses.map(c => {
+          ${state.catalog.courses.map((c, idx) => {
             const cSt = getCourseStats(c);
             const isCurrent = c.id === course.id;
             const isCourseDone = cSt.total > 0 && cSt.completed === cSt.total;
             return `
               <div class="cds-download-row">
-                <div class="cds-roadmap-item-left" style="max-width:620px;">
-                  <span class="cds-check-circle ${isCourseDone ? 'completed' : ''}" style="cursor:default;">
-                    ${isCourseDone ? SVG.check : `<span style="font-size:11px; font-weight:700;">${c.order}</span>`}
-                  </span>
+                <div class="cds-roadmap-item-left" style="max-width:600px;">
+                  <button class="cds-check-circle ${isCourseDone ? 'completed' : ''}" type="button" data-toggle-course-complete="${c.id}" title="Đánh dấu hoàn thành / chưa hoàn thành toàn bộ khóa học">
+                    ${isCourseDone ? SVG.check : `<span style="font-size:11px; font-weight:700;">${idx + 1}</span>`}
+                  </button>
                   <div style="min-width:0; flex:1;">
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                       <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue); text-transform:uppercase;">${escapeHtml(getCourseBrandTag(c))} · ${escapeHtml(c.code)}</span>
-                      <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Drive Synced</span></span>
+                      <span class="cds-status-pill ${isCourseDone ? 'cds-status-pill--synced' : (cSt.completed > 0 ? 'cds-status-pill--running' : 'cds-status-pill--neutral')}">
+                        ${isCourseDone ? `${SVG.check} <span>Completed (100%)</span>` : (cSt.completed > 0 ? `<span>In Progress (${cSt.pct}%)</span>` : `<span>Not Started</span>`)}
+                      </span>
                     </div>
                     <div style="font-size:16.5px; font-weight:700; margin:2px 0 4px; color:var(--cds-text-primary);">${escapeHtml(c.title)}</div>
                     <div style="font-size:13.5px; color:var(--cds-text-secondary);">${escapeHtml(c.description)}</div>
@@ -500,6 +509,9 @@ function renderCourseHome() {
                   </div>
                 </div>
                 <div class="cds-roadmap-item-actions">
+                  <button class="${isCourseDone ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" type="button" data-toggle-course-complete="${c.id}">
+                    ${isCourseDone ? `${SVG.check} <span>Completed</span>` : `<span>Mark Completed</span>`}
+                  </button>
                   <a class="cds-btn-outline cds-btn-sm" href="${c.folderUrl}" target="_blank" rel="noopener">
                     ${SVG.folder}
                     <span>Drive</span>
@@ -562,6 +574,24 @@ function renderCourseHome() {
       e.stopPropagation();
       const lId = btn.getAttribute('data-toggle-lesson');
       await toggleLessonCompleted(lId);
+      renderCourseHome();
+    });
+  });
+
+  dashEl.querySelectorAll('[data-toggle-mod-complete]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const mId = btn.getAttribute('data-toggle-mod-complete');
+      await toggleBatchCompleted(course.id, mId);
+      renderCourseHome();
+    });
+  });
+
+  dashEl.querySelectorAll('[data-toggle-course-complete]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const cId = btn.getAttribute('data-toggle-course-complete');
+      await toggleBatchCompleted(cId, null);
       renderCourseHome();
     });
   });
@@ -638,6 +668,43 @@ function renderLectureSidebar(ctx) {
   });
 }
 
+let activeAutoCompleteTimer = null;
+
+function clearAutoCompleteTimer() {
+  if (activeAutoCompleteTimer) {
+    clearTimeout(activeAutoCompleteTimer);
+    activeAutoCompleteTimer = null;
+  }
+}
+
+async function toggleBatchCompleted(courseId, moduleId = null) {
+  const course = state.catalog?.courses?.find(c => c.id === courseId);
+  if (!course) return;
+
+  let total = 0;
+  let completed = 0;
+  for (const mod of course.modules || []) {
+    if (moduleId && mod.id !== moduleId) continue;
+    for (const sec of mod.sections || []) {
+      for (const les of sec.lessons || []) {
+        total++;
+        if (state.user.progress[les.id]?.status === 'completed') completed++;
+      }
+    }
+  }
+
+  const nextStatus = (total > 0 && completed === total) ? 'not_started' : 'completed';
+  const res = await apiPost('/api/progress/batch', {
+    courseId,
+    moduleId,
+    status: nextStatus
+  });
+  if (res.progress) {
+    state.user.progress = res.progress;
+    renderHeader();
+  }
+}
+
 async function toggleLessonCompleted(lessonId, forceCompleted = null) {
   const ctx = findLessonContext(lessonId);
   if (!ctx) return;
@@ -675,6 +742,7 @@ function updateCompleteButtonsUI() {
 }
 
 async function selectLesson(lessonId, seekTime = null) {
+  clearAutoCompleteTimer();
   const ctx = findLessonContext(lessonId);
   if (!ctx) return;
 
@@ -740,7 +808,10 @@ function renderLectureBreadcrumbBar(ctx) {
   document.getElementById('btnPrevItem')?.addEventListener('click', () => {
     if (prevLesson) selectLesson(prevLesson.id);
   });
-  document.getElementById('btnNextItem')?.addEventListener('click', () => {
+  document.getElementById('btnNextItem')?.addEventListener('click', async () => {
+    if (state.user.progress[lesson.id]?.status !== 'completed') {
+      await toggleLessonCompleted(lesson.id, true);
+    }
     if (nextLesson) selectLesson(nextLesson.id);
   });
 }
@@ -1020,11 +1091,47 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
     });
   }
 
-  if (!videoEl) return;
+  if (!videoEl) {
+    // Google Drive Embed (iframe) mode: track progress & auto-complete after 15s of active viewing
+    const existingProg = state.user.progress[lesson.id];
+    if (!existingProg || existingProg.status === 'not_started') {
+      apiPost('/api/progress', {
+        lessonId: lesson.id,
+        courseId: course.id,
+        status: 'in_progress',
+        currentTime: 0,
+        duration: lesson.durationSec || 0
+      }).then(res => {
+        state.user.progress[lesson.id] = res.progress;
+      }).catch(() => {});
+    }
+    clearAutoCompleteTimer();
+    activeAutoCompleteTimer = setTimeout(() => {
+      if (state.activeLessonId === lesson.id && state.user.progress[lesson.id]?.status !== 'completed') {
+        toggleLessonCompleted(lesson.id, true);
+      }
+    }, 15000);
+    return;
+  }
 
   const overlayEl = document.getElementById('videoLoadingOverlay');
   const subOverlayEl = document.getElementById('customSubtitleOverlay');
   const hideLoading = () => overlayEl?.classList.add('hidden');
+
+  videoEl.addEventListener('play', () => {
+    const existingProg = state.user.progress[lesson.id];
+    if (!existingProg || existingProg.status === 'not_started') {
+      apiPost('/api/progress', {
+        lessonId: lesson.id,
+        courseId: course.id,
+        status: 'in_progress',
+        currentTime: Math.floor(videoEl.currentTime || 0),
+        duration: Math.round(videoEl.duration || lesson.durationSec || 0)
+      }).then(res => {
+        state.user.progress[lesson.id] = res.progress;
+      }).catch(() => {});
+    }
+  });
 
   videoEl.addEventListener('loadedmetadata', () => {
     hideLoading();
@@ -1175,12 +1282,37 @@ function buildReadingLectureHtml(ctx, contentData) {
 }
 
 function setupReadingLectureEvents(ctx, contentData) {
-  const { nextLesson } = ctx;
+  const { course, lesson, nextLesson } = ctx;
   document.getElementById('selectPdfMode')?.addEventListener('change', (e) => {
     state.pdfPreviewMode = e.target.value;
     renderLectureContent(ctx, contentData);
   });
-  document.getElementById('btnReadingNext')?.addEventListener('click', () => {
+
+  // Mark reading as in_progress on open and auto-complete after 6s of reading
+  const existingProg = state.user.progress[lesson.id];
+  if (!existingProg || existingProg.status === 'not_started') {
+    apiPost('/api/progress', {
+      lessonId: lesson.id,
+      courseId: course.id,
+      status: 'in_progress',
+      currentTime: 0,
+      duration: lesson.durationSec || 120
+    }).then(res => {
+      state.user.progress[lesson.id] = res.progress;
+    }).catch(() => {});
+  }
+
+  clearAutoCompleteTimer();
+  activeAutoCompleteTimer = setTimeout(() => {
+    if (state.activeLessonId === lesson.id && state.user.progress[lesson.id]?.status !== 'completed') {
+      toggleLessonCompleted(lesson.id, true);
+    }
+  }, 6000);
+
+  document.getElementById('btnReadingNext')?.addEventListener('click', async () => {
+    if (state.user.progress[lesson.id]?.status !== 'completed') {
+      await toggleLessonCompleted(lesson.id, true);
+    }
     if (nextLesson) selectLesson(nextLesson.id);
   });
 }
@@ -1566,6 +1698,18 @@ function setupModals() {
         openCourseHome(cId, null, subTab);
       });
     });
+
+    containerEl.querySelectorAll('[data-profile-toggle-course]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const cId = btn.getAttribute('data-profile-toggle-course');
+        await toggleBatchCompleted(cId, null);
+        renderProfileBody();
+        if (state.currentView === 'course-home') {
+          renderCourseHome();
+        }
+      });
+    });
   }
 
   function renderProfileBody() {
@@ -1619,16 +1763,21 @@ function setupModals() {
 
             <div class="cds-roadmap-list">
               ${(st.items || []).map(item => {
-                const isCbapSpec = String(item.url || '').includes('certified-business-analysis-professional-cbap');
                 const existingCourse = isCourseInCatalog(item.url);
                 const cSt = existingCourse ? getCourseStats(existingCourse) : null;
+                const isCourseDone = Boolean(cSt && cSt.total > 0 && cSt.completed === cSt.total);
+                const isCourseStarted = Boolean(cSt && cSt.completed > 0 && !isCourseDone);
 
                 return `
                   <div class="cds-roadmap-item">
                     <div class="cds-roadmap-item-left">
-                      <span class="cds-check-circle ${existingCourse ? 'completed' : ''}" style="cursor:default;">
-                        ${existingCourse ? SVG.check : SVG.bookOutline}
-                      </span>
+                      ${existingCourse ? `
+                        <button class="cds-check-circle ${isCourseDone ? 'completed' : ''}" type="button" data-profile-toggle-course="${existingCourse.id}" title="Đánh dấu hoàn thành / chưa hoàn thành toàn bộ khóa học">
+                          ${isCourseDone ? SVG.check : SVG.bookOutline}
+                        </button>
+                      ` : `
+                        <span class="cds-check-circle" style="cursor:default;">${SVG.bookOutline}</span>
+                      `}
                       <div style="min-width:0; flex:1;">
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                           <span style="font-weight:700; font-size:15px; color:var(--cds-text-primary);">
@@ -1637,7 +1786,10 @@ function setupModals() {
                           ${existingCourse ? `
                             <span class="cds-status-pill cds-status-pill--synced">
                               ${SVG.check}
-                              <span>${isCbapSpec ? '4 Courses Synced' : `${escapeHtml(existingCourse.code)} · Synced`}</span>
+                              <span>${escapeHtml(existingCourse.code)} · Synced</span>
+                            </span>
+                            <span class="cds-status-pill ${isCourseDone ? 'cds-status-pill--synced' : (isCourseStarted ? 'cds-status-pill--running' : 'cds-status-pill--neutral')}">
+                              ${isCourseDone ? `${SVG.check} <span>Completed (100%)</span>` : (isCourseStarted ? `<span>In Progress (${cSt.completed}/${cSt.total} · ${cSt.pct}%)</span>` : `<span>0/${cSt.total} completed</span>`)}
                             </span>
                           ` : `
                             <span class="cds-status-pill cds-status-pill--neutral">Not Downloaded</span>
@@ -1646,7 +1798,7 @@ function setupModals() {
 
                         <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:3px;">
                           <strong>${escapeHtml(item.provider)}</strong> • ${escapeHtml(item.duration)} • ${escapeHtml(item.level)}
-                          ${existingCourse && !isCbapSpec ? ` • ${existingCourse.modules.length} Modules • ${existingCourse.totalVideos} Videos • ${existingCourse.totalReadings} Readings • <strong>${cSt.completed}/${cSt.total} completed (${cSt.pct}%)</strong>` : ''}
+                          ${existingCourse ? ` • ${existingCourse.modules.length} Modules • ${existingCourse.totalVideos} Videos • ${existingCourse.totalReadings} Readings • <strong>${cSt.completed}/${cSt.total} completed (${cSt.pct}%)</strong>` : ''}
                         </div>
 
                         ${item.note ? `<div style="font-size:12.5px; color:var(--cds-text-muted); margin-top:3px;">${escapeHtml(item.note)}</div>` : ''}
@@ -1654,13 +1806,18 @@ function setupModals() {
                     </div>
 
                     <div class="cds-roadmap-item-actions">
+                      ${existingCourse ? `
+                        <button class="${isCourseDone ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" type="button" data-profile-toggle-course="${existingCourse.id}">
+                          ${isCourseDone ? `${SVG.check} <span>Completed</span>` : `<span>Mark Completed</span>`}
+                        </button>
+                      ` : ''}
                       <a class="cds-btn-outline cds-btn-sm" href="${escapeHtml(existingCourse ? existingCourse.folderUrl : item.url)}" target="_blank" rel="noopener" title="${existingCourse ? 'Mở thư mục Google Drive' : 'Xem trang gốc trên Coursera'}">
                         ${existingCourse ? SVG.folder : SVG.external}
                         <span>${existingCourse ? 'Drive' : 'Coursera'}</span>
                       </a>
                       ${existingCourse ? `
-                        <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${existingCourse.id}" data-open-subtab="${isCbapSpec ? 'specialization' : 'module'}">
-                          <span>${isCbapSpec ? 'View 4 Courses' : 'Open Course'}</span>
+                        <button class="cds-btn-primary cds-btn-sm" type="button" data-open-existing-course="${existingCourse.id}">
+                          <span>Open Course</span>
                         </button>
                       ` : `
                         <button class="cds-btn-primary cds-btn-sm" type="button" data-quick-check-url="${escapeHtml(item.url)}">
@@ -1743,15 +1900,22 @@ function setupModals() {
         <div class="cds-downloads-list" style="max-height:320px; overflow-y:auto;">
           ${allCourses.map(c => {
             const cSt = getCourseStats(c);
+            const isCourseDone = cSt.total > 0 && cSt.completed === cSt.total;
+            const isCourseStarted = cSt.completed > 0 && !isCourseDone;
             return `
               <div class="cds-download-row">
                 <div class="cds-roadmap-item-left">
-                  <span class="cds-check-circle completed" style="cursor:default;">${SVG.check}</span>
+                  <button class="cds-check-circle ${isCourseDone ? 'completed' : ''}" type="button" data-profile-toggle-course="${c.id}" title="Đánh dấu hoàn thành / chưa hoàn thành toàn bộ khóa học">
+                    ${isCourseDone ? SVG.check : SVG.bookOutline}
+                  </button>
                   <div style="min-width:0; flex:1;">
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                       <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue);">${escapeHtml(c.code)}</span>
                       <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">${escapeHtml(c.title)}</span>
                       <span class="cds-status-pill cds-status-pill--synced">${SVG.check} <span>Synced</span></span>
+                      <span class="cds-status-pill ${isCourseDone ? 'cds-status-pill--synced' : (isCourseStarted ? 'cds-status-pill--running' : 'cds-status-pill--neutral')}">
+                        ${isCourseDone ? `${SVG.check} <span>Completed (100%)</span>` : (isCourseStarted ? `<span>In Progress (${cSt.pct}%)</span>` : `<span>0/${cSt.total} completed</span>`)}
+                      </span>
                     </div>
                     <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
                       ${c.modules.length} Modules • ${c.totalVideos} Videos 720p • ${c.totalReadings} Readings • Tiến độ: <strong>${cSt.completed}/${cSt.total} (${cSt.pct}%)</strong>
@@ -1759,6 +1923,9 @@ function setupModals() {
                   </div>
                 </div>
                 <div class="cds-roadmap-item-actions">
+                  <button class="${isCourseDone ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" type="button" data-profile-toggle-course="${c.id}">
+                    ${isCourseDone ? `${SVG.check} <span>Completed</span>` : `<span>Mark Completed</span>`}
+                  </button>
                   <a class="cds-btn-outline cds-btn-sm" href="${c.folderUrl}" target="_blank" rel="noopener">
                     ${SVG.folder}
                     <span>Drive</span>
