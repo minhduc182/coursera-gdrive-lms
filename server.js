@@ -17,6 +17,10 @@ const {
   searchCourseraCatalog
 } = require('./lib/coursera-crawler');
 const {
+  ensureVietnameseCues,
+  generateLessonStudyGuide
+} = require('./lib/study-assistant');
+const {
   applyStealthHeaders,
   getClientIp,
   isRateLimited,
@@ -670,10 +674,11 @@ const server = http.createServer(async (req, res) => {
       const found = findLessonById(catalog, lessonId);
       if (!found) return sendJson(res, 404, { error: 'Lesson not found' });
 
-      const { lesson } = found;
+      const { course, module, lesson } = found;
       let htmlContent = '';
       let cuesEn = [];
       let cuesVi = [];
+      let viAutoTranslated = false;
 
       if (lesson.instructions?.id) {
         const rawHtml = await ensureTextFile(lesson.instructions.id);
@@ -688,10 +693,63 @@ const server = http.createServer(async (req, res) => {
         cuesVi = parseSrtCues(rawSrt);
       }
 
+      // If lesson has no official .vi.srt, check if auto-translated VI cache exists or if user prefers VI/Dual
+      if (cuesVi.length === 0 && cuesEn.length > 0) {
+        const safeKey = String(lesson.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const autoViPath = path.join(TEXT_CACHE_DIR, `auto_vi_${safeKey}.json`);
+        const state = loadUserState();
+        const prefLang = state.preferences?.subtitleLang;
+        const wantAutoVi = fs.existsSync(autoViPath) || prefLang === 'vi' || prefLang === 'dual' || parsedUrl.searchParams.get('translate') === '1';
+        if (wantAutoVi) {
+          try {
+            cuesVi = await ensureVietnameseCues(lesson.id, cuesEn, TEXT_CACHE_DIR);
+            viAutoTranslated = cuesVi.length > 0;
+          } catch (e) {
+            // Fallback to English if offline
+          }
+        }
+      }
+
+      const studyGuide = generateLessonStudyGuide({
+        course,
+        module,
+        lesson,
+        cuesEn,
+        cuesVi,
+        htmlContent
+      });
+
       let videoCached = false;
       if (lesson.video?.id) {
         const vp = path.join(MEDIA_CACHE_DIR, `${lesson.video.id}.mp4`);
         videoCached = fs.existsSync(vp) && fs.statSync(vp).size > 0;
+      }
+
+      // Smart Preload: find the next video lesson in this course and warm up server SSD cache in background
+      let nextVideoPreloading = false;
+      if (course && Array.isArray(course.modules)) {
+        const flatLessons = [];
+        for (const m of course.modules) {
+          for (const s of m.sections || []) {
+            for (const l of s.lessons || []) {
+              flatLessons.push(l);
+            }
+          }
+        }
+        const curIdx = flatLessons.findIndex(l => l.id === lesson.id);
+        if (curIdx >= 0) {
+          const nextVidLesson = flatLessons.slice(curIdx + 1).find(l => l.video?.id);
+          if (nextVidLesson?.video?.id) {
+            const nextVp = path.join(MEDIA_CACHE_DIR, `${nextVidLesson.video.id}.mp4`);
+            const alreadyCached = fs.existsSync(nextVp) && fs.statSync(nextVp).size > 0;
+            nextVideoPreloading = true;
+            if (!alreadyCached) {
+              setTimeout(() => {
+                ensureMediaFile(nextVidLesson.video.id, '.mp4').catch(() => {});
+              }, 1500);
+            }
+          }
+        }
       }
 
       return sendJson(res, 200, {
@@ -699,7 +757,44 @@ const server = http.createServer(async (req, res) => {
         htmlContent,
         cuesEn,
         cuesVi,
-        videoCached
+        viAutoTranslated,
+        studyGuide,
+        videoCached,
+        nextVideoPreloading
+      });
+    }
+
+    // 8b. POST /api/lesson/:lessonId/translate-vi (On-demand AI/Auto Vietnamese Subtitle Translation)
+    if (req.method === 'POST' && pathname.startsWith('/api/lesson/') && pathname.endsWith('/translate-vi')) {
+      const lessonId = pathname.slice('/api/lesson/'.length, -'/translate-vi'.length);
+      const catalog = loadCatalog();
+      const found = findLessonById(catalog, lessonId);
+      if (!found) return sendJson(res, 404, { error: 'Lesson not found' });
+
+      const { course, module, lesson } = found;
+      let cuesEn = [];
+      if (lesson.subtitles?.en?.id) {
+        const rawSrt = await ensureTextFile(lesson.subtitles.en.id);
+        cuesEn = parseSrtCues(rawSrt);
+      }
+      if (cuesEn.length === 0) {
+        return sendJson(res, 400, { error: 'Bài học này không có phụ đề gốc Tiếng Anh để dịch.' });
+      }
+      const cuesVi = await ensureVietnameseCues(lesson.id, cuesEn, TEXT_CACHE_DIR);
+      const studyGuide = generateLessonStudyGuide({
+        course,
+        module,
+        lesson,
+        cuesEn,
+        cuesVi,
+        htmlContent: ''
+      });
+      return sendJson(res, 200, {
+        ok: true,
+        lessonId: lesson.id,
+        cuesVi,
+        viAutoTranslated: true,
+        studyGuide
       });
     }
 

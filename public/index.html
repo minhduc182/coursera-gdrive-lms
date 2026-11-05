@@ -160,8 +160,11 @@
     <div id="notesModal" class="cds-modal-backdrop hidden">
       <div class="cds-modal-dialog">
         <div class="cds-modal-header">
-          <h3>Course Notes</h3>
-          <button class="cds-icon-close" id="btnCloseNotes">✕</button>
+          <h3>Course Notes &amp; Study Guide</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="cds-btn-outline cds-btn-sm" id="btnExportAllNotesMd" type="button">Export Study Guide (.md)</button>
+            <button class="cds-icon-close" id="btnCloseNotes">✕</button>
+          </div>
         </div>
         <div id="allNotesContainer" class="cds-modal-body"></div>
       </div>

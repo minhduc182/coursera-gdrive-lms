@@ -834,13 +834,14 @@ function renderLectureContent(ctx, contentData, seekTime = null) {
   });
 }
 
-// ── Video Lecture View (Player at Top -> Title Below -> Paragraph Transcript) ──
+// ── Video Lecture View (Player at Top -> Title Below -> Paragraph Transcript & Coach) ──
 function buildVideoLectureHtml(ctx, contentData) {
   const { lesson } = ctx;
   const prefs = state.user.preferences;
   const isDone = state.user.progress[lesson.id]?.status === 'completed';
-  const hasVi = Boolean(lesson.subtitles?.vi && contentData.cuesVi?.length > 0);
-  const subLang = (!hasVi && (prefs.subtitleLang === 'vi' || prefs.subtitleLang === 'dual')) ? 'en' : prefs.subtitleLang;
+  const hasAnySub = Boolean(lesson.subtitles?.en || lesson.subtitles?.vi || contentData.cuesEn?.length || contentData.cuesVi?.length);
+  const hasViReady = Boolean(contentData.cuesVi?.length > 0);
+  const subLang = prefs.subtitleLang || 'en';
   const notesCount = state.user.notes.filter(n => n.lessonId === lesson.id).length;
 
   const playerInner = prefs.playerMode === 'iframe'
@@ -850,10 +851,7 @@ function buildVideoLectureHtml(ctx, contentData) {
         <div class="cds-spinner"></div>
         <div style="font-weight:600;">Streaming video from Google Drive (${formatBytes(lesson.video.size)})...</div>
       </div>
-      <video id="activeVideoPlayer" controls preload="auto" src="/api/drive/media/${lesson.video.id}">
-        ${lesson.subtitles?.en ? `<track label="English" kind="subtitles" srclang="en" src="/api/drive/vtt/${lesson.subtitles.en.id}">` : ''}
-        ${lesson.subtitles?.vi ? `<track label="Tiếng Việt" kind="subtitles" srclang="vi" src="/api/drive/vtt/${lesson.subtitles.vi.id}">` : ''}
-      </video>
+      <video id="activeVideoPlayer" controls preload="auto" src="/api/drive/media/${lesson.video.id}"></video>
       <div id="customSubtitleOverlay" class="cds-subtitle-overlay"></div>
     `;
 
@@ -883,19 +881,22 @@ function buildVideoLectureHtml(ctx, contentData) {
         <button class="cds-u-tab ${state.activeVideoTab === 'transcript' ? 'active' : ''}" data-vtab="transcript">
           Transcript
         </button>
+        <button class="cds-u-tab ${state.activeVideoTab === 'coach' ? 'active' : ''}" data-vtab="coach">
+          Coursera Coach (Tóm tắt &amp; Ôn tập)
+        </button>
         <button class="cds-u-tab ${state.activeVideoTab === 'notes' ? 'active' : ''}" data-vtab="notes">
           Notes (${notesCount})
         </button>
         <button class="cds-u-tab ${state.activeVideoTab === 'downloads' ? 'active' : ''}" data-vtab="downloads">
-          Downloads & Drive
+          Downloads &amp; Drive
         </button>
       </div>
 
       <div class="cds-tabs-right-controls">
         <select id="selectSubtitleLang" class="cds-select-sm" title="Transcript & Subtitle language">
           <option value="en" ${subLang === 'en' ? 'selected' : ''}>English</option>
-          ${hasVi ? `<option value="vi" ${subLang === 'vi' ? 'selected' : ''}>Tiếng Việt</option>` : ''}
-          ${hasVi ? `<option value="dual" ${subLang === 'dual' ? 'selected' : ''}>Bilingual (EN + VI)</option>` : ''}
+          ${hasAnySub ? `<option value="vi" ${subLang === 'vi' ? 'selected' : ''}>Tiếng Việt ${hasViReady ? '' : '(Auto)'}</option>` : ''}
+          ${hasAnySub ? `<option value="dual" ${subLang === 'dual' ? 'selected' : ''}>Song ngữ (EN + VI)</option>` : ''}
           <option value="off" ${subLang === 'off' ? 'selected' : ''}>Subtitles Off</option>
         </select>
 
@@ -912,21 +913,42 @@ function buildVideoLectureHtml(ctx, contentData) {
 
     <!-- Tab 1: Paragraph-Grouped Interactive Transcript -->
     <div id="tabBodyTranscript" class="${state.activeVideoTab === 'transcript' ? '' : 'hidden'}">
-      <div class="cds-transcript-controls">
-        <input type="text" id="inputTranscriptFilter" class="cds-transcript-search-input" placeholder="Search in transcript..." value="${escapeHtml(state.transcriptFilterText)}" />
-        <a href="${lesson.folderUrl}" target="_blank" rel="noopener" style="font-size:13px; font-weight:600;">
-          Google Drive Folder ↗
-        </a>
+      <div class="cds-transcript-controls" style="flex-wrap:wrap; gap:10px;">
+        <input type="text" id="inputTranscriptFilter" class="cds-transcript-search-input" placeholder="Search in transcript (English or Tiếng Việt)..." value="${escapeHtml(state.transcriptFilterText)}" />
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          ${contentData.nextVideoPreloading ? `
+            <span class="cds-status-pill cds-status-pill--synced" title="Máy chủ đang nạp sẵn video bài tiếp theo vào bộ nhớ đệm SSD">
+              ${SVG.check} <span>Smart Preload Ready</span>
+            </span>
+          ` : ''}
+          ${hasViReady ? `
+            <span class="cds-status-pill cds-status-pill--running" id="viSubStatusBadge">
+              ${SVG.check} <span>Phụ đề Song ngữ EN + VI sẵn sàng</span>
+            </span>
+          ` : (contentData.cuesEn?.length > 0 ? `
+            <button class="cds-btn-outline cds-btn-sm" type="button" id="btnAutoTranslateVi">
+              <span>Dịch phụ đề Song ngữ (EN + VI)</span>
+            </button>
+          ` : '')}
+          <a href="${lesson.folderUrl}" target="_blank" rel="noopener" style="font-size:13px; font-weight:600;">
+            Google Drive Folder ↗
+          </a>
+        </div>
       </div>
       <div id="transcriptParagraphs" class="cds-transcript-paragraphs"></div>
     </div>
 
-    <!-- Tab 2: Notes -->
-    <div id="tabBodyNotes" class="${state.activeVideoTab === 'notes' ? '' : 'hidden'}">
-      ${buildNotesPanelHtml(ctx)}
+    <!-- Tab 2: Coursera Coach (Key Takeaways, Domain Glossary & Flashcards) -->
+    <div id="tabBodyCoach" class="${state.activeVideoTab === 'coach' ? '' : 'hidden'}">
+      ${buildCoachPanelHtml(ctx, contentData)}
     </div>
 
-    <!-- Tab 3: Downloads & Drive Links -->
+    <!-- Tab 3: Notes -->
+    <div id="tabBodyNotes" class="${state.activeVideoTab === 'notes' ? '' : 'hidden'}">
+      ${buildNotesPanelHtml(ctx, contentData)}
+    </div>
+
+    <!-- Tab 4: Downloads & Drive Links -->
     <div id="tabBodyDownloads" class="${state.activeVideoTab === 'downloads' ? '' : 'hidden'}">
       ${buildDownloadsTableHtml(ctx)}
     </div>
@@ -942,7 +964,7 @@ function renderCourseraParagraphTranscript(ctx, contentData) {
   const cuesVi = contentData.cuesVi || [];
   const baseCues = cuesEn.length > 0 ? cuesEn : cuesVi;
   const filter = (state.transcriptFilterText || '').trim().toLowerCase();
-  const subLang = state.user.preferences.subtitleLang;
+  const subLang = state.user.preferences.subtitleLang || 'en';
 
   if (baseCues.length === 0) {
     wrapEl.innerHTML = `<div class="cds-empty-state">No transcript available for this video.</div>`;
@@ -992,16 +1014,23 @@ function renderCourseraParagraphTranscript(ctx, contentData) {
   }
 
   wrapEl.innerHTML = paragraphs.map(p => {
-    const phrasesHtml = p.phrases.map(ph => {
+    const phrasesMainHtml = p.phrases.map(ph => {
       const displayMain = (subLang === 'vi' && ph.viText) ? ph.viText : (ph.enText || ph.viText);
-      const displaySub = (subLang === 'dual' && ph.viText) ? `<span class="cds-phrase-vi">${escapeHtml(ph.viText)}</span>` : '';
-      return `<span class="cds-phrase" data-start="${ph.start}" data-end="${ph.end}">${escapeHtml(displayMain)} ${displaySub}</span>`;
+      return `<span class="cds-phrase" data-start="${ph.start}" data-end="${ph.end}">${escapeHtml(displayMain)}</span>`;
     }).join(' ');
+
+    const hasParaVi = subLang === 'dual' && p.phrases.some(ph => ph.viText);
+    const phrasesViHtml = hasParaVi
+      ? `<div class="cds-para-vi-line">${p.phrases.map(ph => ph.viText ? `<span class="cds-phrase" data-start="${ph.start}" data-end="${ph.end}">${escapeHtml(ph.viText)}</span>` : '').filter(Boolean).join(' ')}</div>`
+      : '';
 
     return `
       <div class="cds-para-block">
         <span class="cds-para-time" data-seek-time="${p.start}">${p.timeStr}</span>
-        <div class="cds-para-text">${phrasesHtml}</div>
+        <div class="cds-para-text">
+          <div>${phrasesMainHtml}</div>
+          ${phrasesViHtml}
+        </div>
       </div>
     `;
   }).join('');
@@ -1029,11 +1058,45 @@ function renderCourseraParagraphTranscript(ctx, contentData) {
   });
 }
 
+async function ensureLessonVietnameseTranslated(ctx, contentData) {
+  if (contentData.cuesVi && contentData.cuesVi.length > 0) return true;
+  if (!contentData.cuesEn || contentData.cuesEn.length === 0) return false;
+  const btn = document.getElementById('btnAutoTranslateVi');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="cds-spinner--sm"></span> <span>Đang dịch phụ đề Tiếng Việt...</span>`;
+  }
+  try {
+    const res = await apiPost(`/api/lesson/${encodeURIComponent(ctx.lesson.id)}/translate-vi`, {});
+    if (res.cuesVi && res.cuesVi.length > 0) {
+      contentData.cuesVi = res.cuesVi;
+      contentData.viAutoTranslated = true;
+      if (res.studyGuide) contentData.studyGuide = res.studyGuide;
+      if (btn) {
+        btn.outerHTML = `<span class="cds-status-pill cds-status-pill--running" id="viSubStatusBadge">${SVG.check} <span>Phụ đề Song ngữ EN + VI sẵn sàng</span></span>`;
+      }
+      const coachEl = document.getElementById('tabBodyCoach');
+      if (coachEl) {
+        coachEl.innerHTML = buildCoachPanelHtml(ctx, contentData);
+        setupCoachEvents(ctx, contentData);
+      }
+      return true;
+    }
+  } catch (e) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>Dịch phụ đề Song ngữ (EN + VI)</span>`;
+    }
+  }
+  return false;
+}
+
 function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   const { course, lesson, nextLesson } = ctx;
 
   renderCourseraParagraphTranscript(ctx, contentData);
-  setupNotesEvents(ctx);
+  setupNotesEvents(ctx, contentData);
+  setupCoachEvents(ctx, contentData);
 
   // Switch tabs
   document.querySelectorAll('[data-vtab]').forEach(btn => {
@@ -1041,6 +1104,7 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
       state.activeVideoTab = btn.getAttribute('data-vtab');
       document.querySelectorAll('[data-vtab]').forEach(b => b.classList.toggle('active', b === btn));
       document.getElementById('tabBodyTranscript')?.classList.toggle('hidden', state.activeVideoTab !== 'transcript');
+      document.getElementById('tabBodyCoach')?.classList.toggle('hidden', state.activeVideoTab !== 'coach');
       document.getElementById('tabBodyNotes')?.classList.toggle('hidden', state.activeVideoTab !== 'notes');
       document.getElementById('tabBodyDownloads')?.classList.toggle('hidden', state.activeVideoTab !== 'downloads');
     });
@@ -1054,12 +1118,34 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
     if (input) input.focus();
   });
 
+  document.getElementById('btnAutoTranslateVi')?.addEventListener('click', async () => {
+    const ok = await ensureLessonVietnameseTranslated(ctx, contentData);
+    if (ok) {
+      state.user.preferences.subtitleLang = 'dual';
+      const subSelect = document.getElementById('selectSubtitleLang');
+      if (subSelect) subSelect.value = 'dual';
+      await apiPost('/api/preferences', { subtitleLang: 'dual' });
+      renderCourseraParagraphTranscript(ctx, contentData);
+    }
+  });
+
   // Dropdowns
   const subSelect = document.getElementById('selectSubtitleLang');
   if (subSelect) {
     subSelect.addEventListener('change', async () => {
-      state.user.preferences.subtitleLang = subSelect.value;
-      await apiPost('/api/preferences', { subtitleLang: subSelect.value });
+      const nextLang = subSelect.value;
+      state.user.preferences.subtitleLang = nextLang;
+      await apiPost('/api/preferences', { subtitleLang: nextLang });
+      if ((nextLang === 'vi' || nextLang === 'dual') && (!contentData.cuesVi || contentData.cuesVi.length === 0)) {
+        await ensureLessonVietnameseTranslated(ctx, contentData);
+      }
+      renderCourseraParagraphTranscript(ctx, contentData);
+    });
+  }
+
+  // If user already had 'vi' or 'dual' preference selected and cuesVi is empty, auto-translate in background
+  if ((state.user.preferences.subtitleLang === 'vi' || state.user.preferences.subtitleLang === 'dual') && (!contentData.cuesVi || contentData.cuesVi.length === 0) && contentData.cuesEn?.length > 0) {
+    ensureLessonVietnameseTranslated(ctx, contentData).then(() => {
       renderCourseraParagraphTranscript(ctx, contentData);
     });
   }
@@ -1157,21 +1243,24 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
 
   videoEl.addEventListener('timeupdate', () => {
     const cur = videoEl.currentTime;
-    const hasVi = Boolean(lesson.subtitles?.vi && contentData.cuesVi?.length > 0);
+    const hasVi = Boolean(contentData.cuesVi && contentData.cuesVi.length > 0);
     const subLang = (!hasVi && (state.user.preferences.subtitleLang === 'vi' || state.user.preferences.subtitleLang === 'dual'))
       ? 'en'
-      : state.user.preferences.subtitleLang;
+      : (state.user.preferences.subtitleLang || 'en');
 
     const cueEn = (contentData.cuesEn || []).find(c => cur >= c.start && cur <= c.end);
-    const cueVi = (contentData.cuesVi || []).find(c => cur >= c.start && cur <= c.end);
+    let cueVi = (contentData.cuesVi || []).find(c => cur >= c.start && cur <= c.end);
+    if (!cueVi && cueEn && hasVi) {
+      cueVi = contentData.cuesVi.find(v => Math.abs(v.start - cueEn.start) <= 1.8);
+    }
 
     if (subOverlayEl) {
       if (subLang === 'off') {
         subOverlayEl.innerHTML = '';
       } else if (subLang === 'en' && cueEn) {
         subOverlayEl.innerHTML = `<div class="cds-sub-en">${escapeHtml(cueEn.text)}</div>`;
-      } else if (subLang === 'vi' && cueVi) {
-        subOverlayEl.innerHTML = `<div class="cds-sub-vi">${escapeHtml(cueVi.text)}</div>`;
+      } else if (subLang === 'vi' && (cueVi || cueEn)) {
+        subOverlayEl.innerHTML = `<div class="cds-sub-vi">${escapeHtml((cueVi || cueEn).text)}</div>`;
       } else if (subLang === 'dual' && (cueEn || cueVi)) {
         subOverlayEl.innerHTML = `
           ${cueEn ? `<div class="cds-sub-en">${escapeHtml(cueEn.text)}</div>` : ''}
@@ -1223,6 +1312,211 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   });
 }
 
+// ── Coursera Coach Study Guide & Study Guide Markdown Exporter ──
+function buildCoachPanelHtml(ctx, contentData) {
+  const { course, module, lesson } = ctx;
+  const guide = contentData.studyGuide || { takeaways: [], glossary: [], flashcards: [] };
+  const hasViReady = Boolean(contentData.cuesVi && contentData.cuesVi.length > 0);
+
+  return `
+    <div class="cds-coach-panel">
+      <div class="cds-coach-banner">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+            <span class="cds-status-pill cds-status-pill--running">Coursera Coach</span>
+            <span style="font-size:15px; font-weight:700; color:var(--cds-text-primary);">
+              Tóm tắt Trọng tâm, Thuật ngữ BA/PM/Product &amp; Câu hỏi Ôn tập
+            </span>
+          </div>
+          <div style="font-size:13px; color:var(--cds-text-secondary);">
+            Tổng hợp tự động từ nội dung bài học <strong>${escapeHtml(lesson.title)}</strong> (${escapeHtml(module?.title || course?.shortTitle)}).
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          ${(!hasViReady && contentData.cuesEn?.length > 0) ? `
+            <button class="cds-btn-outline cds-btn-sm" type="button" id="btnCoachTranslateVi">
+              <span>Dịch Song ngữ (EN + VI)</span>
+            </button>
+          ` : ''}
+          <button class="cds-btn-primary cds-btn-sm" type="button" id="btnCoachExportMd">
+            ${SVG.download}
+            <span>Export Study Guide (.md)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. Key Takeaways -->
+      <div class="cds-coach-section">
+        <div class="cds-coach-section-title">
+          <span>1. Tóm tắt ý chính theo mạch bài giảng (Key Takeaways)</span>
+          <span class="cds-status-pill cds-status-pill--neutral">${guide.takeaways.length} phần</span>
+        </div>
+        ${guide.takeaways.length === 0 ? `
+          <div style="font-size:13.5px; color:var(--cds-text-muted);">Chưa có dữ liệu tóm tắt cho bài học này.</div>
+        ` : `
+          <div>
+            ${guide.takeaways.map(t => `
+              <div class="cds-takeaway-item">
+                ${typeof t.timeSec === 'number' ? `
+                  <button class="cds-btn-outline cds-btn-sm" type="button" data-coach-seek="${t.timeSec}" style="flex-shrink:0;">
+                    ▶ ${escapeHtml(t.timeStr)}
+                  </button>
+                ` : `
+                  <span class="cds-status-pill cds-status-pill--neutral" style="flex-shrink:0;">${escapeHtml(t.timeStr)}</span>
+                `}
+                <div style="min-width:0; flex:1;">
+                  <div style="font-size:14px; color:var(--cds-text-primary); line-height:1.5;">${escapeHtml(t.en)}</div>
+                  ${t.vi ? `<div style="font-size:13.5px; color:#1E3A8A; background:#F5F8FF; padding:6px 10px; border-left:3px solid var(--cds-blue); border-radius:0 4px 4px 0; margin-top:6px;">${escapeHtml(t.vi)}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+
+      <!-- 2. Domain Glossary -->
+      <div class="cds-coach-section">
+        <div class="cds-coach-section-title">
+          <span>2. Thuật ngữ Chuyên ngành BA · PM · Product liên quan</span>
+          <span class="cds-status-pill cds-status-pill--synced">${guide.glossary.length} thuật ngữ</span>
+        </div>
+        <div class="cds-glossary-grid">
+          ${guide.glossary.map(g => `
+            <div class="cds-glossary-card">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                <span style="font-weight:700; font-size:14px; color:var(--cds-blue);">${escapeHtml(g.term)}</span>
+                <span class="cds-status-pill cds-status-pill--neutral">${escapeHtml(g.category)}</span>
+              </div>
+              <div style="font-size:13px; color:var(--cds-text-primary); line-height:1.45;">
+                ${escapeHtml(g.definitionVi)}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- 3. Self-Check Flashcards -->
+      <div class="cds-coach-section">
+        <div class="cds-coach-section-title">
+          <span>3. Câu hỏi Tự kiểm tra &amp; Ôn tập nhanh (Flashcards)</span>
+          <span style="font-size:12px; font-weight:600; color:var(--cds-text-secondary);">Bấm để lật xem giải thích</span>
+        </div>
+        <div>
+          ${guide.flashcards.map(fc => `
+            <div class="cds-flashcard-item">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <div style="font-weight:700; font-size:14px; color:var(--cds-text-primary);">${escapeHtml(fc.question)}</div>
+                <button class="cds-btn-outline cds-btn-sm" type="button" data-toggle-fc="${escapeHtml(fc.id)}" style="flex-shrink:0;">
+                  <span>Xem đáp án</span>
+                </button>
+              </div>
+              <div id="fc_ans_${escapeHtml(fc.id)}" class="cds-flashcard-answer hidden">${escapeHtml(fc.answer)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setupCoachEvents(ctx, contentData) {
+  document.querySelectorAll('[data-coach-seek]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sec = parseFloat(btn.getAttribute('data-coach-seek'));
+      const v = document.getElementById('activeVideoPlayer');
+      if (v && !Number.isNaN(sec)) {
+        v.currentTime = sec;
+        v.play().catch(() => {});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-fc]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fcId = btn.getAttribute('data-toggle-fc');
+      const ansEl = document.getElementById(`fc_ans_${fcId}`);
+      if (ansEl) {
+        const isHidden = ansEl.classList.toggle('hidden');
+        btn.innerHTML = `<span>${isHidden ? 'Xem đáp án' : 'Ẩn đáp án'}</span>`;
+      }
+    });
+  });
+
+  document.getElementById('btnCoachTranslateVi')?.addEventListener('click', async () => {
+    await ensureLessonVietnameseTranslated(ctx, contentData);
+    renderCourseraParagraphTranscript(ctx, contentData);
+  });
+
+  document.getElementById('btnCoachExportMd')?.addEventListener('click', () => {
+    exportStudyGuideMarkdown(ctx.course, ctx, contentData);
+  });
+}
+
+function exportStudyGuideMarkdown(courseObj, activeCtx = null, activeContentData = null) {
+  const course = courseObj || state.catalog?.courses?.find(c => c.id === state.activeCourseId) || state.catalog?.courses?.[0];
+  if (!course) return;
+  const st = getCourseStats(course);
+  const lines = [];
+  lines.push(`# Sổ tay Học tập & Tổng hợp Kiến thức: ${course.title}`);
+  lines.push(`- **Mã khóa học**: \`${course.code}\``);
+  lines.push(`- **Tiến độ hoàn thành**: **${st.completed}/${st.total} bài học (${st.pct}%)**`);
+  lines.push(`- **Ngày xuất tài liệu**: ${new Date().toLocaleString('vi-VN')}`);
+  lines.push(`- **Thư mục Google Drive**: ${course.folderUrl}`);
+  lines.push('');
+
+  if (activeCtx && activeContentData?.studyGuide) {
+    const g = activeContentData.studyGuide;
+    lines.push(`## Bài học đang xem: ${activeCtx.lesson.title}`);
+    lines.push(`### 1. Tóm tắt trọng tâm (Key Takeaways)`);
+    for (const t of g.takeaways || []) {
+      lines.push(`- **[${t.timeStr}]** ${t.en}`);
+      if (t.vi) lines.push(`  - *Tiếng Việt*: ${t.vi}`);
+    }
+    lines.push('');
+    lines.push(`### 2. Thuật ngữ Chuyên ngành (BA / PM / Product Glossary)`);
+    for (const term of g.glossary || []) {
+      lines.push(`- **${term.term}** (*${term.category}*): ${term.definitionVi}`);
+    }
+    lines.push('');
+  }
+
+  const courseNotes = state.user.notes.filter(n => n.courseId === course.id);
+  lines.push(`## Ghi chú cá nhân trong khóa học (${courseNotes.length} ghi chú)`);
+  if (courseNotes.length === 0) {
+    lines.push(`*(Chưa có ghi chú cá nhân nào cho khóa học này)*`);
+  } else {
+    for (const n of courseNotes) {
+      const lCtx = findLessonContext(n.lessonId);
+      const timeTag = typeof n.timestampSec === 'number' ? ` [${formatClock(n.timestampSec)}]` : '';
+      lines.push(`- **${lCtx ? lCtx.lesson.title : n.lessonId}**${timeTag}: ${n.content}`);
+    }
+  }
+  lines.push('');
+
+  lines.push(`## Đề cương & Trạng thái các Bài học (${course.modules.length} Modules)`);
+  for (const mod of course.modules) {
+    lines.push(`### ${mod.title}`);
+    for (const sec of mod.sections) {
+      for (const les of sec.lessons) {
+        const done = state.user.progress[les.id]?.status === 'completed';
+        lines.push(`- [${done ? 'x' : ' '}] **${les.title}** (${les.type === 'video' ? 'Video 720p' : 'Reading'})`);
+      }
+    }
+    lines.push('');
+  }
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${course.code || 'Course'}-Study-Guide.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // ── Reading / Supplement View ────────────────────────────────
 function buildReadingLectureHtml(ctx, contentData) {
   const { lesson, nextLesson } = ctx;
@@ -1268,6 +1562,10 @@ function buildReadingLectureHtml(ctx, contentData) {
 
       ${pdfBlocks}
 
+      <div style="margin-top:28px;">
+        ${buildCoachPanelHtml(ctx, contentData)}
+      </div>
+
       <div class="cds-reading-bottom-bar">
         <button class="${isDone ? 'cds-btn-completed' : 'cds-btn-primary'}" data-action="toggle-complete">
           ${isDone ? `${SVG.check} <span>Completed</span>` : `<span>Mark as completed</span>`}
@@ -1284,6 +1582,8 @@ function buildReadingLectureHtml(ctx, contentData) {
 
 function setupReadingLectureEvents(ctx, contentData) {
   const { course, lesson, nextLesson } = ctx;
+  setupCoachEvents(ctx, contentData);
+
   document.getElementById('selectPdfMode')?.addEventListener('change', (e) => {
     state.pdfPreviewMode = e.target.value;
     renderLectureContent(ctx, contentData);
@@ -1327,7 +1627,10 @@ function buildNotesPanelHtml(ctx) {
     <div style="max-width:720px;">
       <div style="margin-bottom:16px;">
         <textarea id="noteInput" placeholder="Add a note at the current video timestamp..." style="width:100%; min-height:80px; border:1px solid var(--cds-border); border-radius:4px; padding:10px; font-family:inherit; font-size:14.5px; margin-bottom:8px;"></textarea>
-        <button class="cds-btn-primary" id="btnSaveNote">Save note</button>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button class="cds-btn-primary" id="btnSaveNote">Save note</button>
+          <button class="cds-btn-outline" type="button" id="btnExportNotesMd">${SVG.download} <span>Export Study Guide (.md)</span></button>
+        </div>
       </div>
       <div id="lessonNotesList" class="cds-downloads-list">
         ${renderNotesRowsHtml(notes)}
@@ -1351,10 +1654,14 @@ function renderNotesRowsHtml(notes) {
   `).join('');
 }
 
-function setupNotesEvents(ctx) {
+function setupNotesEvents(ctx, contentData = null) {
   const { course, lesson } = ctx;
   const btnSave = document.getElementById('btnSaveNote');
   const noteInput = document.getElementById('noteInput');
+
+  document.getElementById('btnExportNotesMd')?.addEventListener('click', () => {
+    exportStudyGuideMarkdown(course, ctx, contentData);
+  });
 
   if (btnSave && noteInput) {
     btnSave.addEventListener('click', async () => {
@@ -1590,6 +1897,10 @@ function setupModals() {
 
   document.getElementById('btnCloseNotes')?.addEventListener('click', () => notesModal.classList.add('hidden'));
   bindSafeModalBackdrop(notesModal, () => notesModal.classList.add('hidden'));
+  document.getElementById('btnExportAllNotesMd')?.addEventListener('click', () => {
+    const activeCourse = state.catalog?.courses?.find(c => c.id === state.activeCourseId) || state.catalog?.courses?.[0];
+    exportStudyGuideMarkdown(activeCourse, null, null);
+  });
 
   // ── Profile Modal: Gợi ý lộ trình học, Shopping & Get khóa học ─────────
   const profileModal = document.getElementById('profileModal');

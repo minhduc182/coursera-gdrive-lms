@@ -1668,3 +1668,108 @@ a:hover {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+/* ── Bilingual Transcript & Coursera Coach Study Assistant ── */
+.cds-para-vi-line {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--cds-blue);
+  background: #F5F8FF;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #1E3A8A;
+}
+
+.cds-para-vi-line .cds-phrase {
+  color: #1E3A8A;
+}
+
+.cds-para-vi-line .cds-phrase.active {
+  background: #DBEAFE;
+  color: var(--cds-blue);
+  font-weight: 700;
+}
+
+.cds-coach-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 900px;
+}
+
+.cds-coach-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border: 1px solid #C3D4FD;
+  background: linear-gradient(90deg, #F0F5FF 0%, #FFFFFF 100%);
+  border-radius: 8px;
+}
+
+.cds-coach-section {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  background: var(--cds-bg-white);
+  padding: 18px 20px;
+}
+
+.cds-coach-section-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cds-takeaway-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--cds-border-light);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cds-takeaway-item:last-child {
+  border-bottom: none;
+}
+
+.cds-glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+.cds-glossary-card {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: #FAFBFC;
+}
+
+.cds-flashcard-item {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--cds-bg-white);
+}
+.cds-flashcard-item:last-child {
+  margin-bottom: 0;
+}
+
+.cds-flashcard-answer {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--cds-green-bg);
+  border-left: 3px solid var(--cds-green);
+  border-radius: 4px;
+  font-size: 13.5px;
+  color: var(--cds-text-primary);
+  white-space: pre-wrap;
+}
