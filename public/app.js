@@ -33,14 +33,76 @@ const SVG = {
   videoOutline: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>`,
   bookOutline: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>`,
   chevronDown: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>`,
-  chevronRight: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+  chevronRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
+  chevronLeft: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
   external: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`,
   note: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`,
   download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
   alert: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
   folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
-  compass: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>`
+  compass: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>`,
+  camera: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`,
+  theater: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="8" y1="4" x2="8" y2="20"></line></svg>`,
+  translate: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 8 6 6"></path><path d="m4 14 6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="m22 22-5-10-5 10"></path><path d="M14 18h6"></path></svg>`,
+  trash: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+  close: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`,
+  restart: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>`,
+  eye: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+  zoomIn: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>`,
+  flame: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>`,
+  clock: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+  chart: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+  award: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`,
+  star: `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+  coach: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
 };
+
+let hudToastTimer = null;
+function showHudToast(message, iconSvg = SVG.check) {
+  let el = document.getElementById('cdsHudToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'cdsHudToast';
+    el.className = 'cds-hud-toast hidden';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `${iconSvg} <span>${escapeHtml(message)}</span>`;
+  el.classList.remove('hidden');
+  clearTimeout(hudToastTimer);
+  hudToastTimer = setTimeout(() => {
+    el.classList.add('hidden');
+  }, 2600);
+}
+
+function toggleTheaterMode(forceState = null) {
+  const sb = document.getElementById('courseSidebar');
+  const btnShow = document.getElementById('btnShowSidebar');
+  if (!sb) return;
+  const willCollapse = forceState !== null ? forceState : !sb.classList.contains('collapsed');
+  sb.classList.toggle('collapsed', willCollapse);
+  btnShow?.classList.toggle('hidden', !willCollapse);
+  document.body.classList.toggle('cds-theater-active', willCollapse);
+  document.querySelectorAll('#btnTheaterMode').forEach(btn => {
+    btn.classList.toggle('cds-btn-completed', willCollapse);
+    btn.innerHTML = `${SVG.theater} <span>${willCollapse ? 'Thoát Tập trung (T)' : 'Chế độ Tập trung (T)'}</span>`;
+  });
+}
+
+function openSlideLightbox(imgUrl, titleText = 'Slide bài giảng') {
+  const modal = document.getElementById('slideLightboxModal');
+  const img = document.getElementById('slideLightboxImg');
+  const title = document.getElementById('slideLightboxTitle');
+  const dl = document.getElementById('slideLightboxDownload');
+  if (!modal || !img) return;
+  img.src = imgUrl;
+  if (title) title.textContent = titleText;
+  if (dl) {
+    dl.href = imgUrl;
+    dl.download = `${titleText.replace(/[^a-zA-Z0-9_-]+/g, '_')}.jpg`;
+  }
+  modal.classList.remove('hidden');
+}
 
 function getCourseBrandTag(course) {
   const code = String(course?.code || '').toUpperCase();
@@ -333,6 +395,9 @@ function renderCourseHome() {
 
         const iconSvg = isDone ? SVG.check : (les.type === 'video' ? SVG.play : SVG.reading);
         const typeLabel = les.type === 'video' ? 'Video' : 'Reading';
+        const resumeSec = (prog?.currentTime > 3 && !isDone) ? prog.currentTime : 0;
+        const durSec = prog?.duration || les.durationSec || 0;
+        const resumePct = (resumeSec > 0 && durSec > 0) ? Math.min(96, Math.max(4, Math.round((resumeSec / durSec) * 100))) : 0;
 
         return `
           <div class="cds-syllabus-item" data-open-lesson="${les.id}">
@@ -340,19 +405,25 @@ function renderCourseHome() {
               <button class="cds-check-circle ${isDone ? 'completed' : ''}" data-toggle-lesson="${les.id}" title="Mark as completed / uncompleted">
                 ${iconSvg}
               </button>
-              <div>
+              <div style="min-width:0; flex:1;">
                 <div class="cds-syllabus-item-title">${escapeHtml(les.title)}</div>
                 <div class="cds-syllabus-item-meta">
                   ${typeLabel} • ${formatCourseraMin(les.durationSec)}
                   ${hasPdf ? ' • PDF Attachment' : ''}
                   ${hasVi ? ' • Subtitles: EN, VI' : ''}
-                  ${prog?.currentTime > 5 && !isDone ? ` • Resumes at ${formatClock(prog.currentTime)}` : ''}
+                  ${resumeSec > 0 ? ` • <strong style="color:var(--cds-blue);">Đang xem tại ${formatClock(resumeSec)}${durSec > 0 ? ` / ${formatClock(durSec)}` : ''}</strong>` : ''}
                 </div>
+                ${resumePct > 0 ? `
+                  <div class="cds-mini-progress-track">
+                    <div class="cds-mini-progress-fill" style="width:${resumePct}%;"></div>
+                  </div>
+                ` : ''}
               </div>
             </div>
-            ${isNextUp ? `
-              <button class="cds-btn-primary" data-open-lesson="${les.id}">
-                ${prog?.currentTime > 5 ? 'Resume' : 'Start'}
+            ${(isNextUp || resumeSec > 0) ? `
+              <button class="cds-btn-primary cds-btn-sm" data-open-lesson="${les.id}">
+                ${SVG.play}
+                <span>${resumeSec > 0 ? `Học tiếp (${formatClock(resumeSec)})` : 'Start'}</span>
               </button>
             ` : ''}
           </div>
@@ -366,8 +437,9 @@ function renderCourseHome() {
               ${isCollapsed ? SVG.chevronRight : SVG.chevronDown}
               <span class="cds-section-title">${escapeHtml(sec.title)}</span>
             </div>
-            <a href="${sec.folderUrl}" target="_blank" rel="noopener" style="font-size:13px; font-weight:600;" onclick="event.stopPropagation()">
-              Drive Folder ↗
+            <a class="cds-btn-outline cds-btn-sm" href="${sec.folderUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+              ${SVG.external}
+              <span>Drive Folder</span>
             </a>
           </div>
           ${!isCollapsed ? `<div class="cds-section-items">${itemsHtml}</div>` : ''}
@@ -375,8 +447,58 @@ function renderCourseHome() {
       `;
     }).join('');
 
+    // Find best lesson in this course to resume right away (1-click Continue Learning Card)
+    const courseFlat = getAllLessonsFlat(course);
+    let resumeCandidate = null;
+    for (const item of courseFlat) {
+      const p = state.user.progress[item.lesson.id];
+      if (p && p.status !== 'completed' && p.currentTime > 3) {
+        if (!resumeCandidate || (p.updatedAt || '') > (state.user.progress[resumeCandidate.lesson.id]?.updatedAt || '')) {
+          resumeCandidate = item;
+        }
+      }
+    }
+    if (!resumeCandidate && state.user.lastVisited?.courseId === course.id && state.user.lastVisited?.lessonId) {
+      const lv = courseFlat.find(x => x.lesson.id === state.user.lastVisited.lessonId);
+      if (lv && state.user.progress[lv.lesson.id]?.status !== 'completed') {
+        resumeCandidate = lv;
+      }
+    }
+    if (!resumeCandidate) {
+      resumeCandidate = courseFlat.find(x => state.user.progress[x.lesson.id]?.status !== 'completed') || null;
+    }
+
+    let resumeBannerHtml = '';
+    if (resumeCandidate) {
+      const rProg = state.user.progress[resumeCandidate.lesson.id];
+      const rSec = (rProg?.currentTime > 3 && rProg?.status !== 'completed') ? rProg.currentTime : 0;
+      const rDur = rProg?.duration || resumeCandidate.lesson.durationSec || 0;
+      const rPct = (rSec > 0 && rDur > 0) ? Math.min(96, Math.max(5, Math.round((rSec / rDur) * 100))) : 0;
+      resumeBannerHtml = `
+        <div class="cds-continue-banner">
+          <div style="min-width:0; flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <span class="cds-status-pill cds-status-pill--running">${SVG.clock} <span>${rSec > 0 ? `Đang học dở tại ${formatClock(rSec)}` : 'Bài học tiếp theo'}</span></span>
+              <span style="font-size:12.5px; font-weight:600; color:var(--cds-text-secondary);">Module ${resumeCandidate.module.index}: ${escapeHtml(resumeCandidate.module.title)}</span>
+            </div>
+            <div style="font-size:16px; font-weight:700; color:var(--cds-text-primary);">${escapeHtml(resumeCandidate.lesson.title)}</div>
+            ${rPct > 0 ? `
+              <div class="cds-mini-progress-track" style="max-width:340px; margin-top:8px;">
+                <div class="cds-mini-progress-fill" style="width:${rPct}%;"></div>
+              </div>
+            ` : ''}
+          </div>
+          <button class="cds-btn-primary" type="button" data-open-lesson="${resumeCandidate.lesson.id}" data-seek="${rSec > 0 ? rSec : ''}">
+            ${SVG.play}
+            <span>${rSec > 0 ? `Học tiếp tại ${formatClock(rSec)}` : 'Vào học ngay'}</span>
+          </button>
+        </div>
+      `;
+    }
+
     const isModDone = mTotal > 0 && mDone === mTotal;
     stageInner = `
+      ${resumeBannerHtml}
       <div class="cds-card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
           <h1 class="cds-module-card-title">Module ${activeMod.index}: ${escapeHtml(activeMod.title)}</h1>
@@ -433,20 +555,27 @@ function renderCourseHome() {
   } else if (state.homeSubTab === 'notes') {
     stageInner = `
       <div class="cds-card">
-        <h1 class="cds-module-card-title">Course Notes (${courseNotes.length})</h1>
+        <h1 class="cds-module-card-title">Course Notes &amp; Captured Slides (${courseNotes.length})</h1>
         ${courseNotes.length === 0
-          ? `<div class="cds-empty-state">You haven't saved any notes in this course yet. Click "Save note" below any video or reading to add one.</div>`
+          ? `<div class="cds-empty-state">You haven't saved any notes in this course yet. Click "Save note" or "Chụp Slide" below any video to add one.</div>`
           : `<div class="cds-downloads-list">
               ${courseNotes.map(n => {
                 const ctx = findLessonContext(n.lessonId);
                 return `
                   <div class="cds-download-row" style="cursor:pointer;" data-open-lesson="${n.lessonId}" data-seek="${n.timestampSec ?? ''}">
-                    <div>
-                      <div style="font-weight:700; color:var(--cds-blue); font-size:14px;">
-                        ${ctx ? `${escapeHtml(ctx.lesson.title)}` : ''}
-                        ${typeof n.timestampSec === 'number' ? ` (${formatClock(n.timestampSec)})` : ''}
+                    <div style="min-width:0; flex:1;">
+                      <div style="font-weight:700; color:var(--cds-blue); font-size:14px; display:flex; align-items:center; gap:6px;">
+                        ${SVG.play}
+                        <span>${ctx ? `${escapeHtml(ctx.lesson.title)}` : ''}</span>
+                        ${typeof n.timestampSec === 'number' ? `<span class="cds-status-pill cds-status-pill--running">${formatClock(n.timestampSec)}</span>` : ''}
                       </div>
-                      <div style="margin-top:4px; white-space:pre-wrap;">${escapeHtml(n.content)}</div>
+                      <div style="margin-top:6px; white-space:pre-wrap;">${escapeHtml(n.content)}</div>
+                      ${n.imageDataUrl ? `
+                        <div class="cds-note-slide-wrap" data-lightbox-src="${escapeHtml(n.imageDataUrl)}" data-lightbox-title="${escapeHtml(ctx ? ctx.lesson.title : 'Slide')}">
+                          <img src="${escapeHtml(n.imageDataUrl)}" alt="Slide" class="cds-note-slide-img" />
+                          <span class="cds-note-slide-badge">${SVG.zoomIn} <span>Xem phóng to Slide</span></span>
+                        </div>
+                      ` : ''}
                     </div>
                     <span style="font-size:12.5px; color:var(--cds-text-muted);">${new Date(n.createdAt).toLocaleDateString('vi-VN')}</span>
                   </div>
@@ -467,7 +596,10 @@ function renderCourseHome() {
               <strong>Google Drive Course Folder</strong>
               <div style="font-size:13px; color:var(--cds-text-muted);">Folder ID: <code>${course.id}</code></div>
             </div>
-            <a class="cds-btn-outline" href="${course.folderUrl}" target="_blank" rel="noopener">Open in Google Drive ↗</a>
+            <a class="cds-btn-outline" href="${course.folderUrl}" target="_blank" rel="noopener">
+              ${SVG.external}
+              <span>Open in Google Drive</span>
+            </a>
           </div>
         </div>
       </div>
@@ -599,11 +731,19 @@ function renderCourseHome() {
 
   dashEl.querySelectorAll('[data-open-lesson]').forEach(el => {
     el.addEventListener('click', (e) => {
+      if (e.target.closest('[data-lightbox-src]')) return;
       e.stopPropagation();
       const lId = el.getAttribute('data-open-lesson');
       const seekStr = el.getAttribute('data-seek');
       const seek = seekStr ? parseFloat(seekStr) : null;
       openLecture(course.id, lId, seek);
+    });
+  });
+
+  dashEl.querySelectorAll('[data-lightbox-src]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSlideLightbox(el.getAttribute('data-lightbox-src'), el.getAttribute('data-lightbox-title') || 'Slide');
     });
   });
 }
@@ -622,10 +762,14 @@ function renderLectureSidebar(ctx) {
         : `Module ${mod.index}: ${mod.title}`;
 
       const itemsHtml = sec.lessons.map(les => {
-        const isDone = state.user.progress[les.id]?.status === 'completed';
+        const prog = state.user.progress[les.id];
+        const isDone = prog?.status === 'completed';
         const isActive = state.activeLessonId === les.id;
         const typePrefix = les.type === 'video' ? 'Video:' : 'Reading:';
         const iconSvg = isDone ? SVG.check : (les.type === 'video' ? SVG.play : SVG.reading);
+        const resumeSec = (prog?.currentTime > 3 && !isDone) ? prog.currentTime : 0;
+        const durSec = prog?.duration || les.durationSec || 0;
+        const resumePct = (resumeSec > 0 && durSec > 0) ? Math.min(96, Math.max(4, Math.round((resumeSec / durSec) * 100))) : 0;
 
         return `
           <div class="cds-drawer-item ${isActive ? 'active' : ''}" data-drawer-lesson="${les.id}">
@@ -639,7 +783,13 @@ function renderLectureSidebar(ctx) {
               <div class="cds-drawer-item-line2">
                 ${formatCourseraMin(les.durationSec)}
                 ${les.pdfs?.length ? ' • PDF' : ''}
+                ${resumeSec > 0 ? ` • <span style="color:var(--cds-blue); font-weight:600;">${formatClock(resumeSec)}</span>` : ''}
               </div>
+              ${resumePct > 0 ? `
+                <div class="cds-mini-progress-track" style="margin-top:4px;">
+                  <div class="cds-mini-progress-fill" style="width:${resumePct}%;"></div>
+                </div>
+              ` : ''}
             </div>
           </div>
         `;
@@ -797,14 +947,25 @@ function renderLectureBreadcrumbBar(ctx) {
   document.getElementById('bcModule')?.addEventListener('click', () => openCourseHome(course.id, mod.id, 'module'));
 
   const navEl = document.getElementById('classroomPrevNext');
+  const isTheater = document.getElementById('courseSidebar')?.classList.contains('collapsed');
   navEl.innerHTML = `
+    <button class="${isTheater ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" id="btnTheaterMode" type="button" title="Phím tắt: T">
+      ${SVG.theater}
+      <span>${isTheater ? 'Thoát Tập trung (T)' : 'Chế độ Tập trung (T)'}</span>
+    </button>
     <button class="cds-prev-next-link" id="btnPrevItem" ${!prevLesson ? 'disabled' : ''}>
-      ‹ Previous
+      ${SVG.chevronLeft}
+      <span>Previous</span>
     </button>
     <button class="cds-prev-next-link" id="btnNextItem" ${!nextLesson ? 'disabled' : ''}>
-      Next ›
+      <span>Next</span>
+      ${SVG.chevronRight}
     </button>
   `;
+
+  document.getElementById('btnTheaterMode')?.addEventListener('click', () => {
+    toggleTheaterMode();
+  });
 
   document.getElementById('btnPrevItem')?.addEventListener('click', () => {
     if (prevLesson) selectLesson(prevLesson.id);
@@ -851,7 +1012,8 @@ function buildVideoLectureHtml(ctx, contentData) {
         <div class="cds-spinner"></div>
         <div style="font-weight:600;">Streaming video from Google Drive (${formatBytes(lesson.video.size)})...</div>
       </div>
-      <video id="activeVideoPlayer" controls preload="auto" src="/api/drive/media/${lesson.video.id}"></video>
+      <div id="resumePlaybackBanner" class="cds-resume-toast hidden"></div>
+      <video id="activeVideoPlayer" controls preload="auto" crossorigin="anonymous" src="/api/drive/media/${lesson.video.id}"></video>
       <div id="customSubtitleOverlay" class="cds-subtitle-overlay"></div>
     `;
 
@@ -865,9 +1027,15 @@ function buildVideoLectureHtml(ctx, contentData) {
     <div class="cds-video-below-header">
       <h1 class="cds-lecture-h1">${escapeHtml(lesson.title)}</h1>
       <div class="cds-lecture-actions">
-        <button class="cds-btn-outline" id="btnSaveVideoNote">
+        ${prefs.playerMode !== 'iframe' ? `
+          <button class="cds-btn-outline" id="btnSnapSlideQuick" type="button" title="Chụp nhanh khung hình Slide hiện tại vào Ghi chú (Phím tắt: S)">
+            ${SVG.camera}
+            <span>Chụp Slide (S)</span>
+          </button>
+        ` : ''}
+        <button class="cds-btn-outline" id="btnSaveVideoNote" type="button" title="Mở ô nhập ghi chú tại mốc thời gian hiện tại (Phím tắt: N)">
           ${SVG.note}
-          <span>Save note</span>
+          <span>Save note (N)</span>
         </button>
         <button class="${isDone ? 'cds-btn-completed' : 'cds-btn-outline'}" data-action="toggle-complete">
           ${isDone ? `${SVG.check} <span>Completed</span>` : `<span>Mark as completed</span>`}
@@ -884,7 +1052,7 @@ function buildVideoLectureHtml(ctx, contentData) {
         <button class="cds-u-tab ${state.activeVideoTab === 'coach' ? 'active' : ''}" data-vtab="coach">
           Coursera Coach (Tóm tắt &amp; Ôn tập)
         </button>
-        <button class="cds-u-tab ${state.activeVideoTab === 'notes' ? 'active' : ''}" data-vtab="notes">
+        <button class="cds-u-tab ${state.activeVideoTab === 'notes' ? 'active' : ''}" data-vtab="notes" id="videoNotesTabBtn">
           Notes (${notesCount})
         </button>
         <button class="cds-u-tab ${state.activeVideoTab === 'downloads' ? 'active' : ''}" data-vtab="downloads">
@@ -927,11 +1095,13 @@ function buildVideoLectureHtml(ctx, contentData) {
             </span>
           ` : (contentData.cuesEn?.length > 0 ? `
             <button class="cds-btn-outline cds-btn-sm" type="button" id="btnAutoTranslateVi">
+              ${SVG.translate}
               <span>Dịch phụ đề Song ngữ (EN + VI)</span>
             </button>
           ` : '')}
-          <a href="${lesson.folderUrl}" target="_blank" rel="noopener" style="font-size:13px; font-weight:600;">
-            Google Drive Folder ↗
+          <a class="cds-btn-outline cds-btn-sm" href="${lesson.folderUrl}" target="_blank" rel="noopener">
+            ${SVG.external}
+            <span>Google Drive Folder</span>
           </a>
         </div>
       </div>
@@ -1091,6 +1261,68 @@ async function ensureLessonVietnameseTranslated(ctx, contentData) {
   return false;
 }
 
+function captureVideoSlideDataUrl() {
+  const v = document.getElementById('activeVideoPlayer');
+  if (!v || !v.videoWidth || !v.videoHeight) return null;
+  try {
+    const maxW = 960;
+    const scale = v.videoWidth > maxW ? (maxW / v.videoWidth) : 1;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(v.videoWidth * scale);
+    canvas.height = Math.round(v.videoHeight * scale);
+    const ctx2d = canvas.getContext('2d');
+    ctx2d.drawImage(v, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.82);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function quickSnapVideoSlide(ctx) {
+  const v = document.getElementById('activeVideoPlayer');
+  if (!v) return;
+  const imgDataUrl = captureVideoSlideDataUrl();
+  if (!imgDataUrl) {
+    showHudToast('Video đang tải khung hình, hãy thử lại sau 1 giây.', SVG.alert);
+    return;
+  }
+  const timestampSec = Math.round(v.currentTime || 0);
+  const noteInput = document.getElementById('noteInput');
+  const typedText = noteInput ? noteInput.value.trim() : '';
+
+  // Also grab current subtitle cue if available to enrich the default slide caption
+  let defaultCaption = `Slide bài giảng tại [${formatClock(timestampSec)}]`;
+  if (state.currentLessonData?.cuesEn?.length) {
+    const cue = state.currentLessonData.cuesEn.find(c => v.currentTime >= c.start && v.currentTime <= c.end);
+    if (cue?.text) defaultCaption = `${cue.text}`;
+  }
+
+  const content = typedText || defaultCaption;
+  const res = await apiPost('/api/notes', {
+    lessonId: ctx.lesson.id,
+    courseId: ctx.course.id,
+    timestampSec,
+    content,
+    imageDataUrl: imgDataUrl
+  });
+  state.user.notes = res.notes;
+  if (noteInput && typedText) noteInput.value = '';
+  pendingNoteSlideDataUrl = null;
+  renderPendingSlidePreview();
+  renderHeader();
+
+  const notesCount = state.user.notes.filter(n => n.lessonId === ctx.lesson.id).length;
+  const tabBtn = document.getElementById('videoNotesTabBtn');
+  if (tabBtn) tabBtn.textContent = `Notes (${notesCount})`;
+
+  const listEl = document.getElementById('lessonNotesList');
+  if (listEl) {
+    listEl.innerHTML = renderNotesRowsHtml(state.user.notes.filter(n => n.lessonId === ctx.lesson.id));
+    bindNoteActions();
+  }
+  showHudToast(`Đã chụp Slide tại ${formatClock(timestampSec)} vào Ghi chú!`, SVG.camera);
+}
+
 function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   const { course, lesson, nextLesson } = ctx;
 
@@ -1108,6 +1340,11 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
       document.getElementById('tabBodyNotes')?.classList.toggle('hidden', state.activeVideoTab !== 'notes');
       document.getElementById('tabBodyDownloads')?.classList.toggle('hidden', state.activeVideoTab !== 'downloads');
     });
+  });
+
+  // 1-click Snap Slide button
+  document.getElementById('btnSnapSlideQuick')?.addEventListener('click', () => {
+    quickSnapVideoSlide(ctx);
   });
 
   // Save note button opens Notes tab & focuses textarea
@@ -1225,11 +1462,33 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
     videoEl.playbackRate = Number(state.user.preferences.playbackRate) || 1;
 
     const savedProg = state.user.progress[lesson.id];
+    const resumeBanner = document.getElementById('resumePlaybackBanner');
     if (typeof seekTime === 'number' && seekTime > 0) {
       videoEl.currentTime = seekTime;
       videoEl.play().catch(() => {});
-    } else if (savedProg?.currentTime > 3 && savedProg?.status !== 'completed' && savedProg.currentTime < videoEl.duration - 5) {
+    } else if (savedProg?.currentTime > 3 && savedProg.currentTime < (videoEl.duration || 999999) - 5) {
       videoEl.currentTime = savedProg.currentTime;
+      if (resumeBanner) {
+        resumeBanner.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${SVG.clock}
+            <span>Đã khôi phục tại <strong>${formatClock(savedProg.currentTime)}</strong></span>
+          </div>
+          <button type="button" class="cds-resume-toast-btn" id="btnRestartFromZero">
+            ${SVG.restart}
+            <span>Xem từ đầu</span>
+          </button>
+        `;
+        resumeBanner.classList.remove('hidden');
+        document.getElementById('btnRestartFromZero')?.addEventListener('click', () => {
+          videoEl.currentTime = 0;
+          resumeBanner.classList.add('hidden');
+          videoEl.play().catch(() => {});
+        });
+        setTimeout(() => {
+          resumeBanner.classList.add('hidden');
+        }, 7500);
+      }
     }
 
     if (nextLesson?.video?.id) {
@@ -1240,6 +1499,38 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   videoEl.addEventListener('canplay', hideLoading);
 
   let lastSavedSec = -1;
+  let lastWallClockMs = Date.now();
+
+  const saveVideoProgressNow = (curSec, deltaWatchedSec = 0) => {
+    const roundedSec = Math.max(0, Math.floor(curSec || 0));
+    if (roundedSec <= 0) return;
+    lastSavedSec = roundedSec;
+    const existing = state.user.progress[lesson.id];
+    const isAlmostDone = videoEl.duration > 0 && curSec / videoEl.duration >= 0.92;
+    const nextStatus = (existing?.status === 'completed' || isAlmostDone) ? 'completed' : 'in_progress';
+
+    apiPost('/api/progress', {
+      lessonId: lesson.id,
+      courseId: course.id,
+      status: nextStatus,
+      currentTime: roundedSec,
+      duration: Math.round(videoEl.duration || lesson.durationSec || 0),
+      deltaSec: deltaWatchedSec
+    }).then(res => {
+      const prevStatus = state.user.progress[lesson.id]?.status;
+      state.user.progress[lesson.id] = res.progress;
+      if (res.studyLog) state.user.studyLog = res.studyLog;
+      renderLectureSidebar(ctx);
+      if (prevStatus !== res.progress.status) {
+        renderHeader();
+        updateCompleteButtonsUI();
+      }
+    }).catch(() => {});
+  };
+
+  videoEl.addEventListener('pause', () => {
+    saveVideoProgressNow(videoEl.currentTime, 0);
+  });
 
   videoEl.addEventListener('timeupdate', () => {
     const cur = videoEl.currentTime;
@@ -1284,26 +1575,10 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
 
     const roundedSec = Math.floor(cur);
     if (roundedSec > 0 && Math.abs(roundedSec - lastSavedSec) >= 5) {
-      lastSavedSec = roundedSec;
-      const existing = state.user.progress[lesson.id];
-      const isAlmostDone = videoEl.duration > 0 && cur / videoEl.duration >= 0.92;
-      const nextStatus = (existing?.status === 'completed' || isAlmostDone) ? 'completed' : 'in_progress';
-
-      apiPost('/api/progress', {
-        lessonId: lesson.id,
-        courseId: course.id,
-        status: nextStatus,
-        currentTime: roundedSec,
-        duration: Math.round(videoEl.duration || lesson.durationSec || 0)
-      }).then(res => {
-        const prevStatus = state.user.progress[lesson.id]?.status;
-        state.user.progress[lesson.id] = res.progress;
-        if (prevStatus !== res.progress.status) {
-          renderHeader();
-          renderLectureSidebar(ctx);
-          updateCompleteButtonsUI();
-        }
-      }).catch(() => {});
+      const nowMs = Date.now();
+      const elapsedWallSec = Math.min(15, Math.max(1, Math.round((nowMs - lastWallClockMs) / 1000)));
+      lastWallClockMs = nowMs;
+      saveVideoProgressNow(cur, elapsedWallSec);
     }
   });
 
@@ -1335,6 +1610,7 @@ function buildCoachPanelHtml(ctx, contentData) {
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           ${(!hasViReady && contentData.cuesEn?.length > 0) ? `
             <button class="cds-btn-outline cds-btn-sm" type="button" id="btnCoachTranslateVi">
+              ${SVG.translate}
               <span>Dịch Song ngữ (EN + VI)</span>
             </button>
           ` : ''}
@@ -1359,7 +1635,8 @@ function buildCoachPanelHtml(ctx, contentData) {
               <div class="cds-takeaway-item">
                 ${typeof t.timeSec === 'number' ? `
                   <button class="cds-btn-outline cds-btn-sm" type="button" data-coach-seek="${t.timeSec}" style="flex-shrink:0;">
-                    ▶ ${escapeHtml(t.timeStr)}
+                    ${SVG.play}
+                    <span>${escapeHtml(t.timeStr)}</span>
                   </button>
                 ` : `
                   <span class="cds-status-pill cds-status-pill--neutral" style="flex-shrink:0;">${escapeHtml(t.timeStr)}</span>
@@ -1407,6 +1684,7 @@ function buildCoachPanelHtml(ctx, contentData) {
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                 <div style="font-weight:700; font-size:14px; color:var(--cds-text-primary);">${escapeHtml(fc.question)}</div>
                 <button class="cds-btn-outline cds-btn-sm" type="button" data-toggle-fc="${escapeHtml(fc.id)}" style="flex-shrink:0;">
+                  ${SVG.eye}
                   <span>Xem đáp án</span>
                 </button>
               </div>
@@ -1438,7 +1716,7 @@ function setupCoachEvents(ctx, contentData) {
       const ansEl = document.getElementById(`fc_ans_${fcId}`);
       if (ansEl) {
         const isHidden = ansEl.classList.toggle('hidden');
-        btn.innerHTML = `<span>${isHidden ? 'Xem đáp án' : 'Ẩn đáp án'}</span>`;
+        btn.innerHTML = `${SVG.eye} <span>${isHidden ? 'Xem đáp án' : 'Ẩn đáp án'}</span>`;
       }
     });
   });
@@ -1490,6 +1768,9 @@ function exportStudyGuideMarkdown(courseObj, activeCtx = null, activeContentData
       const lCtx = findLessonContext(n.lessonId);
       const timeTag = typeof n.timestampSec === 'number' ? ` [${formatClock(n.timestampSec)}]` : '';
       lines.push(`- **${lCtx ? lCtx.lesson.title : n.lessonId}**${timeTag}: ${n.content}`);
+      if (n.imageDataUrl) {
+        lines.push(`  ![Slide ${formatClock(n.timestampSec || 0)}](${n.imageDataUrl})`);
+      }
     }
   }
   lines.push('');
@@ -1536,8 +1817,8 @@ function buildReadingLectureHtml(ctx, contentData) {
               <option value="proxy" ${state.pdfPreviewMode === 'proxy' ? 'selected' : ''}>Direct PDF Viewer</option>
               <option value="gdrive" ${state.pdfPreviewMode === 'gdrive' ? 'selected' : ''}>Google Drive Preview</option>
             </select>
-            <a class="cds-btn-outline" href="/api/drive/media/${pdf.id}" download="${escapeHtml(pdf.name)}">Download</a>
-            <a class="cds-btn-outline" href="${pdf.viewUrl}" target="_blank" rel="noopener">Google Drive ↗</a>
+            <a class="cds-btn-outline" href="/api/drive/media/${pdf.id}" download="${escapeHtml(pdf.name)}">${SVG.download} <span>Download</span></a>
+            <a class="cds-btn-outline" href="${pdf.viewUrl}" target="_blank" rel="noopener">${SVG.external} <span>Google Drive</span></a>
           </div>
         </div>
         <iframe class="cds-pdf-iframe" src="${src}"></iframe>
@@ -1550,7 +1831,8 @@ function buildReadingLectureHtml(ctx, contentData) {
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
         <h1 class="cds-lecture-h1">${escapeHtml(lesson.title)}</h1>
         <a class="cds-btn-outline" href="${lesson.instructions?.viewUrl || lesson.folderUrl}" target="_blank" rel="noopener">
-          Google Drive Source ↗
+          ${SVG.external}
+          <span>Google Drive Source</span>
         </a>
       </div>
 
@@ -1572,7 +1854,8 @@ function buildReadingLectureHtml(ctx, contentData) {
         </button>
         ${nextLesson ? `
           <button class="cds-btn-outline" id="btnReadingNext">
-            Go to next item ›
+            <span>Go to next item</span>
+            ${SVG.chevronRight}
           </button>
         ` : ''}
       </div>
@@ -1619,17 +1902,59 @@ function setupReadingLectureEvents(ctx, contentData) {
 }
 
 // ── Notes & Downloads Builders ───────────────────────────────
+let pendingNoteSlideDataUrl = null;
+
+function renderPendingSlidePreview() {
+  const wrap = document.getElementById('pendingSlidePreviewBox');
+  if (!wrap) return;
+  if (!pendingNoteSlideDataUrl) {
+    wrap.innerHTML = '';
+    wrap.classList.add('hidden');
+    return;
+  }
+  wrap.classList.remove('hidden');
+  wrap.innerHTML = `
+    <div class="cds-pending-slide-box">
+      <img src="${pendingNoteSlideDataUrl}" alt="Slide Preview" class="cds-note-slide-img" />
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:12.5px; font-weight:700; color:var(--cds-blue);">Đã đính kèm khung hình Slide hiện tại</span>
+        <button type="button" class="cds-btn-outline cds-btn-sm" id="btnRemovePendingSlide">
+          ${SVG.trash}
+          <span>Bỏ ảnh đính kèm</span>
+        </button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnRemovePendingSlide')?.addEventListener('click', () => {
+    pendingNoteSlideDataUrl = null;
+    renderPendingSlidePreview();
+  });
+}
+
 function buildNotesPanelHtml(ctx) {
   const { lesson } = ctx;
   const notes = state.user.notes.filter(n => n.lessonId === lesson.id);
 
   return `
-    <div style="max-width:720px;">
+    <div style="max-width:760px;">
       <div style="margin-bottom:16px;">
-        <textarea id="noteInput" placeholder="Add a note at the current video timestamp..." style="width:100%; min-height:80px; border:1px solid var(--cds-border); border-radius:4px; padding:10px; font-family:inherit; font-size:14.5px; margin-bottom:8px;"></textarea>
+        <textarea id="noteInput" placeholder="Ghi chú kiến thức hoặc bấm 'Chụp Slide' để lưu ngay sơ đồ trên màn hình video..." style="width:100%; min-height:80px; border:1px solid var(--cds-border); border-radius:4px; padding:10px; font-family:inherit; font-size:14.5px; margin-bottom:8px;"></textarea>
+        <div id="pendingSlidePreviewBox" class="hidden" style="margin-bottom:10px;"></div>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <button class="cds-btn-primary" id="btnSaveNote">Save note</button>
-          <button class="cds-btn-outline" type="button" id="btnExportNotesMd">${SVG.download} <span>Export Study Guide (.md)</span></button>
+          <button class="cds-btn-primary" id="btnSaveNote" type="button">
+            ${SVG.note}
+            <span>Save note</span>
+          </button>
+          ${lesson.type === 'video' ? `
+            <button class="cds-btn-outline" type="button" id="btnAttachSlideToNote">
+              ${SVG.camera}
+              <span>Đính kèm khung hình Slide</span>
+            </button>
+          ` : ''}
+          <button class="cds-btn-outline" type="button" id="btnExportNotesMd">
+            ${SVG.download}
+            <span>Export Study Guide (.md)</span>
+          </button>
         </div>
       </div>
       <div id="lessonNotesList" class="cds-downloads-list">
@@ -1641,15 +1966,28 @@ function buildNotesPanelHtml(ctx) {
 
 function renderNotesRowsHtml(notes) {
   if (!notes || notes.length === 0) {
-    return `<div class="cds-empty-state">No notes saved for this lesson yet.</div>`;
+    return `<div class="cds-empty-state">No notes or captured slides saved for this lesson yet.</div>`;
   }
   return notes.map(n => `
-    <div class="cds-download-row">
-      <div>
-        ${typeof n.timestampSec === 'number' ? `<button class="cds-btn-outline" data-seek="${n.timestampSec}" style="padding:2px 8px; font-size:12px; margin-bottom:4px;">▶ ${formatClock(n.timestampSec)}</button>` : ''}
-        <div style="white-space:pre-wrap;">${escapeHtml(n.content)}</div>
+    <div class="cds-download-row" style="align-items:flex-start;">
+      <div style="min-width:0; flex:1;">
+        ${typeof n.timestampSec === 'number' ? `
+          <button class="cds-btn-outline cds-btn-sm" data-seek="${n.timestampSec}" style="margin-bottom:6px;">
+            ${SVG.play}
+            <span>${formatClock(n.timestampSec)}</span>
+          </button>
+        ` : ''}
+        <div style="white-space:pre-wrap; font-size:14.5px;">${escapeHtml(n.content)}</div>
+        ${n.imageDataUrl ? `
+          <div class="cds-note-slide-wrap" data-lightbox-src="${escapeHtml(n.imageDataUrl)}" data-lightbox-title="${escapeHtml(n.content.slice(0, 50) || 'Slide')}">
+            <img src="${escapeHtml(n.imageDataUrl)}" alt="Captured Slide" class="cds-note-slide-img" />
+            <span class="cds-note-slide-badge">${SVG.zoomIn} <span>Phóng to Slide</span></span>
+          </div>
+        ` : ''}
       </div>
-      <button class="cds-icon-close" data-delete-note="${n.id}" title="Delete note">✕</button>
+      <button class="cds-icon-close" data-delete-note="${n.id}" title="Delete note" aria-label="Delete note">
+        ${SVG.trash}
+      </button>
     </div>
   `).join('');
 }
@@ -1658,15 +1996,26 @@ function setupNotesEvents(ctx, contentData = null) {
   const { course, lesson } = ctx;
   const btnSave = document.getElementById('btnSaveNote');
   const noteInput = document.getElementById('noteInput');
+  pendingNoteSlideDataUrl = null;
 
   document.getElementById('btnExportNotesMd')?.addEventListener('click', () => {
     exportStudyGuideMarkdown(course, ctx, contentData);
   });
 
+  document.getElementById('btnAttachSlideToNote')?.addEventListener('click', () => {
+    const imgUrl = captureVideoSlideDataUrl();
+    if (!imgUrl) {
+      showHudToast('Hãy phát video để chụp khung hình Slide.', SVG.alert);
+      return;
+    }
+    pendingNoteSlideDataUrl = imgUrl;
+    renderPendingSlidePreview();
+  });
+
   if (btnSave && noteInput) {
     btnSave.addEventListener('click', async () => {
       const content = noteInput.value.trim();
-      if (!content) return;
+      if (!content && !pendingNoteSlideDataUrl) return;
       const v = document.getElementById('activeVideoPlayer');
       const timestampSec = (lesson.type === 'video' && v) ? Math.round(v.currentTime) : null;
 
@@ -1674,17 +2023,25 @@ function setupNotesEvents(ctx, contentData = null) {
         lessonId: lesson.id,
         courseId: course.id,
         timestampSec,
-        content
+        content,
+        imageDataUrl: pendingNoteSlideDataUrl
       });
       state.user.notes = res.notes;
       noteInput.value = '';
+      pendingNoteSlideDataUrl = null;
+      renderPendingSlidePreview();
       renderHeader();
+
+      const notesCount = state.user.notes.filter(n => n.lessonId === lesson.id).length;
+      const tabBtn = document.getElementById('videoNotesTabBtn');
+      if (tabBtn) tabBtn.textContent = `Notes (${notesCount})`;
 
       const listEl = document.getElementById('lessonNotesList');
       if (listEl) {
         listEl.innerHTML = renderNotesRowsHtml(state.user.notes.filter(n => n.lessonId === lesson.id));
         bindNoteActions();
       }
+      showHudToast('Đã lưu ghi chú bài học!', SVG.check);
     });
   }
   bindNoteActions();
@@ -1699,6 +2056,12 @@ function bindNoteActions() {
         v.currentTime = sec;
         v.play().catch(() => {});
       }
+    });
+  });
+
+  document.querySelectorAll('#lessonNotesList [data-lightbox-src]').forEach(el => {
+    el.addEventListener('click', () => {
+      openSlideLightbox(el.getAttribute('data-lightbox-src'), el.getAttribute('data-lightbox-title') || 'Slide');
     });
   });
 
@@ -1729,8 +2092,8 @@ function buildDownloadsTableHtml(ctx) {
           <div style="font-size:13px; color:var(--cds-text-muted);">${escapeHtml(lesson.video.name)} • ${formatBytes(lesson.video.size)} • Drive ID: <code>${lesson.video.id}</code></div>
         </div>
         <div style="display:flex; gap:8px;">
-          <a class="cds-btn-outline" href="/api/drive/media/${lesson.video.id}" download="${escapeHtml(lesson.video.name)}">Download MP4</a>
-          <a class="cds-btn-outline" href="${lesson.video.viewUrl}" target="_blank" rel="noopener">Open in Drive ↗</a>
+          <a class="cds-btn-outline" href="/api/drive/media/${lesson.video.id}" download="${escapeHtml(lesson.video.name)}">${SVG.download} <span>Download MP4</span></a>
+          <a class="cds-btn-outline" href="${lesson.video.viewUrl}" target="_blank" rel="noopener">${SVG.external} <span>Open in Drive</span></a>
         </div>
       </div>
     `);
@@ -1743,7 +2106,7 @@ function buildDownloadsTableHtml(ctx) {
           <strong>English Subtitles (.en.srt)</strong>
           <div style="font-size:13px; color:var(--cds-text-muted);">Drive ID: <code>${lesson.subtitles.en.id}</code></div>
         </div>
-        <a class="cds-btn-outline" href="${lesson.subtitles.en.viewUrl}" target="_blank" rel="noopener">Open in Drive ↗</a>
+        <a class="cds-btn-outline" href="${lesson.subtitles.en.viewUrl}" target="_blank" rel="noopener">${SVG.external} <span>Open in Drive</span></a>
       </div>
     `);
   }
@@ -1755,7 +2118,7 @@ function buildDownloadsTableHtml(ctx) {
           <strong>Vietnamese Subtitles (.vi.srt)</strong>
           <div style="font-size:13px; color:var(--cds-text-muted);">Drive ID: <code>${lesson.subtitles.vi.id}</code></div>
         </div>
-        <a class="cds-btn-outline" href="${lesson.subtitles.vi.viewUrl}" target="_blank" rel="noopener">Open in Drive ↗</a>
+        <a class="cds-btn-outline" href="${lesson.subtitles.vi.viewUrl}" target="_blank" rel="noopener">${SVG.external} <span>Open in Drive</span></a>
       </div>
     `);
   }
@@ -1766,7 +2129,7 @@ function buildDownloadsTableHtml(ctx) {
         <strong>Google Drive Lesson Folder</strong>
         <div style="font-size:13px; color:var(--cds-text-muted);">Folder ID: <code>${lesson.folderId}</code></div>
       </div>
-      <a class="cds-btn-outline" href="${lesson.folderUrl}" target="_blank" rel="noopener">Open Folder in Drive ↗</a>
+      <a class="cds-btn-outline" href="${lesson.folderUrl}" target="_blank" rel="noopener">${SVG.external} <span>Open Folder in Drive</span></a>
     </div>
   `);
 
@@ -1801,17 +2164,105 @@ function setupModals() {
     });
   }
 
+  const shortcutsModal = document.getElementById('shortcutsModal');
+  const slideLightboxModal = document.getElementById('slideLightboxModal');
+  const closeShortcuts = () => shortcutsModal?.classList.add('hidden');
+  const closeSlideLightbox = () => slideLightboxModal?.classList.add('hidden');
+
   document.getElementById('btnOpenSearch')?.addEventListener('click', openSearch);
   document.getElementById('btnCloseSearch')?.addEventListener('click', closeSearch);
   bindSafeModalBackdrop(searchModal, closeSearch);
+
+  document.getElementById('btnOpenShortcuts')?.addEventListener('click', () => {
+    shortcutsModal?.classList.remove('hidden');
+  });
+  document.getElementById('btnCloseShortcuts')?.addEventListener('click', closeShortcuts);
+  bindSafeModalBackdrop(shortcutsModal, closeShortcuts);
+
+  document.getElementById('btnCloseSlideLightbox')?.addEventListener('click', closeSlideLightbox);
+  bindSafeModalBackdrop(slideLightboxModal, closeSlideLightbox);
 
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       openSearch();
-    } else if (e.key === 'Escape') {
+      return;
+    }
+    if (e.key === 'Escape') {
       closeSearch();
+      closeShortcuts();
+      closeSlideLightbox();
       document.getElementById('notesModal')?.classList.add('hidden');
+      document.getElementById('profileModal')?.classList.add('hidden');
+      return;
+    }
+
+    // Ignore shortcuts when typing in inputs or when modifier keys are held
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = (e.target?.tagName || '').toUpperCase();
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target?.isContentEditable) return;
+
+    if (e.key === '?') {
+      e.preventDefault();
+      shortcutsModal?.classList.toggle('hidden');
+      return;
+    }
+
+    const anyModalOpen = [searchModal, shortcutsModal, slideLightboxModal, document.getElementById('notesModal'), document.getElementById('profileModal')]
+      .some(m => m && !m.classList.contains('hidden'));
+    if (anyModalOpen || state.currentView !== 'lecture') return;
+
+    const key = e.key.toLowerCase();
+    const videoEl = document.getElementById('activeVideoPlayer');
+
+    if (key === 't') {
+      e.preventDefault();
+      toggleTheaterMode();
+    } else if (key === 's') {
+      const snapBtn = document.getElementById('btnSnapSlideQuick');
+      if (snapBtn && !snapBtn.disabled) {
+        e.preventDefault();
+        snapBtn.click();
+      }
+    } else if (key === 'n') {
+      e.preventDefault();
+      const notesTabBtn = document.querySelector('[data-lec-tab="notes"]');
+      if (notesTabBtn) notesTabBtn.click();
+      setTimeout(() => document.getElementById('noteInput')?.focus(), 40);
+      showHudToast('Đã mở khung Ghi chú (N)');
+    } else if (key === 'c') {
+      const subSel = document.getElementById('selectSubtitleLang');
+      if (subSel && subSel.options.length > 0) {
+        e.preventDefault();
+        const nextIdx = (subSel.selectedIndex + 1) % subSel.options.length;
+        subSel.selectedIndex = nextIdx;
+        subSel.dispatchEvent(new Event('change'));
+        showHudToast(`Phụ đề: ${subSel.options[nextIdx].text}`);
+      }
+    } else if (key === 'f' && videoEl) {
+      e.preventDefault();
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.();
+      } else {
+        videoEl.requestFullscreen?.();
+      }
+    } else if (key === 'j' && videoEl) {
+      e.preventDefault();
+      videoEl.currentTime = Math.max(0, (videoEl.currentTime || 0) - 10);
+      showHudToast(`Tua lùi 10s (${formatClock(videoEl.currentTime)})`);
+    } else if (key === 'l' && videoEl) {
+      e.preventDefault();
+      videoEl.currentTime = Math.min(videoEl.duration || Infinity, (videoEl.currentTime || 0) + 10);
+      showHudToast(`Tua tới 10s (${formatClock(videoEl.currentTime)})`);
+    } else if ((key === 'k' || e.key === ' ') && videoEl && tag !== 'BUTTON' && tag !== 'VIDEO' && tag !== 'A') {
+      e.preventDefault();
+      if (videoEl.paused) {
+        videoEl.play().catch(() => {});
+        showHudToast('Đang phát video');
+      } else {
+        videoEl.pause();
+        showHudToast(`Đã tạm dừng tại ${formatClock(videoEl.currentTime)}`);
+      }
     }
   });
 
@@ -1873,16 +2324,47 @@ function setupModals() {
     }
     notesBody.innerHTML = state.user.notes.map(n => {
       const ctx = findLessonContext(n.lessonId);
+      const caption = `${ctx ? `${ctx.course.code} · ${ctx.lesson.title}` : ''}${typeof n.timestampSec === 'number' ? ` (${formatClock(n.timestampSec)})` : ''}`;
       return `
         <div class="cds-search-result-item" data-note-course="${n.courseId}" data-note-lesson="${n.lessonId}" data-note-sec="${n.timestampSec ?? ''}">
-          <div style="font-size:13px; font-weight:700; color:var(--cds-blue);">
-            ${ctx ? `${escapeHtml(ctx.course.code)} · ${escapeHtml(ctx.lesson.title)}` : ''}
-            ${typeof n.timestampSec === 'number' ? ` (${formatClock(n.timestampSec)})` : ''}
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+            <div style="font-size:13px; font-weight:700; color:var(--cds-blue); display:flex; align-items:center; gap:6px;">
+              ${SVG.play}
+              <span>${ctx ? `${escapeHtml(ctx.course.code)} · ${escapeHtml(ctx.lesson.title)}` : ''}</span>
+              ${typeof n.timestampSec === 'number' ? `<span>(${formatClock(n.timestampSec)})</span>` : ''}
+            </div>
+            ${n.imageDataUrl ? `
+              <button class="cds-btn-outline cds-btn-sm" type="button" data-allnote-zoom="${escapeHtml(n.id)}">
+                ${SVG.zoomIn}
+                <span>Xem Slide</span>
+              </button>
+            ` : ''}
           </div>
-          <div style="margin-top:4px; white-space:pre-wrap;">${escapeHtml(n.content)}</div>
+          ${n.imageDataUrl ? `
+            <div class="cds-note-slide-wrap" data-allnote-zoom="${escapeHtml(n.id)}" style="margin-top:8px; max-width:340px;">
+              <img src="${n.imageDataUrl}" alt="Slide snapshot" class="cds-note-slide-img" loading="lazy" />
+              <span class="cds-note-slide-badge">${SVG.zoomIn} <span>Phóng to Slide</span></span>
+            </div>
+          ` : ''}
+          ${n.content ? `<div style="margin-top:6px; white-space:pre-wrap;">${escapeHtml(n.content)}</div>` : ''}
         </div>
       `;
     }).join('');
+
+    notesBody.querySelectorAll('[data-allnote-zoom]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const noteId = el.getAttribute('data-allnote-zoom');
+        const noteObj = state.user.notes.find(x => x.id === noteId);
+        if (noteObj?.imageDataUrl) {
+          const ctx = findLessonContext(noteObj.lessonId);
+          openSlideLightbox(
+            noteObj.imageDataUrl,
+            `${ctx ? `${ctx.course.code} · ${ctx.lesson.title}` : ''}${typeof noteObj.timestampSec === 'number' ? ` @ ${formatClock(noteObj.timestampSec)}` : ''}`
+          );
+        }
+      });
+    });
 
     notesBody.querySelectorAll('[data-note-lesson]').forEach(el => {
       el.addEventListener('click', () => {
@@ -1902,10 +2384,10 @@ function setupModals() {
     exportStudyGuideMarkdown(activeCourse, null, null);
   });
 
-  // ── Profile Modal: Gợi ý lộ trình học, Shopping & Get khóa học ─────────
+  // ── Profile Modal: Thống kê học tập, Gợi ý lộ trình học, Shopping & Get khóa học ─────────
   const profileModal = document.getElementById('profileModal');
   const profileBody = document.getElementById('profileModalBody');
-  let activeProfileTab = 'roadmap'; // 'roadmap' | 'discover' | 'crawler'
+  let activeProfileTab = 'analytics'; // 'analytics' | 'roadmap' | 'discover' | 'crawler'
   let roadmapDataCache = null;
   let lastCheckResult = null;
   let pendingCheckUrl = '';
@@ -2204,7 +2686,7 @@ function setupModals() {
                   <div class="cds-shop-meta">
                     ${item.rating ? `
                       <span class="cds-shop-rating">
-                        <span class="cds-shop-star">★</span>
+                        <span class="cds-shop-star" style="display:inline-flex; align-items:center;">${SVG.star}</span>
                         <span>${Number(item.rating).toFixed(1)}</span>
                       </span>
                       <span>(${Number(item.reviewsCount || 0).toLocaleString()} reviews)</span>
@@ -2358,6 +2840,226 @@ function setupModals() {
     const totalReadings = state.catalog?.specialization?.totalReadings || allCourses.reduce((s, c) => s + (c.totalReadings || 0), 0);
     const totalLessons = totalVideos + totalReadings;
 
+    if (activeProfileTab === 'analytics') {
+      const completedCount = Object.keys(state.user.completed || {}).filter(k => state.user.completed[k]).length;
+      const overallPct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+
+      // Calculate study streak and total study time
+      const studyLog = state.user.studyLog || {};
+      const totalLoggedSec = Object.values(studyLog).reduce((acc, d) => acc + (Number(d?.secondsWatched) || 0), 0);
+      const totalProgressSec = Object.values(state.user.videoProgress || {}).reduce((acc, p) => acc + (Number(p?.currentTime) || 0), 0);
+      const effectiveWatchSec = Math.max(totalLoggedSec, totalProgressSec);
+      const watchHours = (effectiveWatchSec / 3600).toFixed(1);
+
+      let streakDays = 0;
+      const today = new Date();
+      for (let i = 0; i < 365; i++) {
+        const d = new Date(today.getTime() - i * 86400000);
+        const key = d.toISOString().slice(0, 10);
+        const entry = studyLog[key];
+        if (entry && (entry.secondsWatched > 0 || entry.lessonsCompleted > 0)) {
+          streakDays++;
+        } else if (i === 0) {
+          // Allow streak to continue if user studied yesterday
+          continue;
+        } else {
+          break;
+        }
+      }
+      if (streakDays === 0 && (completedCount > 0 || Object.keys(state.user.videoProgress || {}).length > 0)) {
+        streakDays = 1;
+      }
+
+      const notesCount = (state.user.notes || []).length;
+      const slidesCount = (state.user.notes || []).filter(n => Boolean(n.imageDataUrl)).length;
+      const completedCoursesCount = allCourses.filter(c => {
+        const st = getCourseStats(c);
+        return st.total > 0 && st.completed === st.total;
+      }).length;
+      const inProgressCoursesCount = allCourses.filter(c => {
+        const st = getCourseStats(c);
+        return st.completed > 0 && st.completed < st.total;
+      }).length;
+
+      // Build list of in-progress lessons for 1-click resume
+      const inProgressLessons = [];
+      for (const [lessonId, prog] of Object.entries(state.user.videoProgress || {})) {
+        if (prog && prog.currentTime > 5 && !isDone(lessonId)) {
+          const ctx = findLessonContext(lessonId);
+          if (ctx) {
+            const pct = prog.duration > 0 ? Math.min(99, Math.max(3, Math.round((prog.currentTime / prog.duration) * 100))) : 25;
+            inProgressLessons.push({
+              course: ctx.course,
+              module: ctx.module,
+              lesson: ctx.lesson,
+              currentTime: prog.currentTime,
+              duration: prog.duration || 0,
+              pct,
+              updatedAt: prog.updatedAt || ''
+            });
+          }
+        }
+      }
+      inProgressLessons.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+
+      const stages = roadmapDataCache.stages || [];
+
+      profileBody.innerHTML = `
+        <!-- 4 KPI Cards -->
+        <div class="cds-analytics-grid">
+          <div class="cds-analytics-card">
+            <div class="cds-analytics-icon" style="background:#FFF4ED; color:#E04F16;">${SVG.flame}</div>
+            <div>
+              <div class="cds-analytics-val">${streakDays} ngày liên tiếp</div>
+              <div class="cds-analytics-label">Chuỗi ngày học · Đã xem <strong>${watchHours} giờ</strong> video</div>
+            </div>
+          </div>
+
+          <div class="cds-analytics-card">
+            <div class="cds-analytics-icon" style="background:var(--cds-green-bg); color:var(--cds-green);">${SVG.check}</div>
+            <div>
+              <div class="cds-analytics-val">${completedCount} / ${totalLessons} (${overallPct}%)</div>
+              <div class="cds-analytics-label">Bài học đã hoàn thành trên toàn hệ thống</div>
+            </div>
+          </div>
+
+          <div class="cds-analytics-card">
+            <div class="cds-analytics-icon" style="background:var(--cds-blue-light); color:var(--cds-blue);">${SVG.award}</div>
+            <div>
+              <div class="cds-analytics-val">${completedCoursesCount} hoàn thành · ${inProgressCoursesCount} đang học</div>
+              <div class="cds-analytics-label">Tổng số ${allCourses.length} khóa học trên Google Drive</div>
+            </div>
+          </div>
+
+          <div class="cds-analytics-card">
+            <div class="cds-analytics-icon" style="background:#F4F3FF; color:#6938EF;">${SVG.camera}</div>
+            <div>
+              <div class="cds-analytics-val">${notesCount} ghi chú · ${slidesCount} Slide</div>
+              <div class="cds-analytics-label">Ghi chú kèm mốc giờ &amp; ảnh chụp Slide bài giảng</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Đang học dở — Học tiếp 1 chạm -->
+        <div class="cds-roadmap-stage">
+          <div class="cds-roadmap-stage-head" style="margin-bottom:10px;">
+            <div>
+              <div class="cds-roadmap-stage-title">Đang xem dở — Học tiếp 1 chạm (${inProgressLessons.length})</div>
+              <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+                Hệ thống tự động lưu vị trí từng giây của mọi bài giảng video bạn đang xem dở. Bấm <strong>Học tiếp</strong> để mở đúng giây đang dừng.
+              </div>
+            </div>
+          </div>
+
+          ${inProgressLessons.length === 0 ? `
+            <div style="border:1px solid var(--cds-border-light); border-radius:8px; padding:18px; text-align:center; font-size:13.5px; color:var(--cds-text-muted); background:#FAFBFC;">
+              Chưa có video nào đang xem dở. Khi bạn tạm dừng hoặc chuyển bài giữa chừng, bài giảng sẽ xuất hiện tại đây để học tiếp 1 chạm.
+            </div>
+          ` : `
+            <div class="cds-downloads-list">
+              ${inProgressLessons.slice(0, 8).map(item => `
+                <div class="cds-download-row">
+                  <div class="cds-roadmap-item-left">
+                    <span class="cds-check-circle" style="color:var(--cds-blue); border-color:var(--cds-blue); background:var(--cds-blue-light);">
+                      ${SVG.play}
+                    </span>
+                    <div style="min-width:0; flex:1;">
+                      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue);">${escapeHtml(item.course.code)}</span>
+                        <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">${escapeHtml(item.lesson.title)}</span>
+                        <span class="cds-status-pill cds-status-pill--running">
+                          ${SVG.clock}
+                          <span>Đang dừng tại ${formatClock(item.currentTime)}${item.duration > 0 ? ` / ${formatClock(item.duration)}` : ''} (${item.pct}%)</span>
+                        </span>
+                      </div>
+                      <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                        ${escapeHtml(item.course.title)} · ${escapeHtml(item.module.title)}
+                      </div>
+                      <div class="cds-mini-progress-track" style="max-width:340px; margin-top:6px;">
+                        <div class="cds-mini-progress-fill" style="width:${item.pct}%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cds-roadmap-item-actions">
+                    <button class="cds-btn-primary cds-btn-sm" type="button" data-analytics-resume-course="${item.course.id}" data-analytics-resume-lesson="${item.lesson.id}" data-analytics-resume-sec="${item.currentTime}">
+                      ${SVG.play}
+                      <span>Học tiếp (${formatClock(item.currentTime)})</span>
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+
+        <!-- Tiến độ theo 3 Giai đoạn Chuyên môn -->
+        <div class="cds-roadmap-stage">
+          <div class="cds-roadmap-stage-head" style="margin-bottom:10px;">
+            <div>
+              <div class="cds-roadmap-stage-title">Tiến độ theo 3 Giai đoạn Chuyên môn (BA · PM · Product)</div>
+              <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+                Tỷ lệ hoàn thành thực tế trên từng chặng kỹ năng dựa trên các khóa học đã đồng bộ trên Google Drive.
+              </div>
+            </div>
+            <button class="cds-btn-outline cds-btn-sm" type="button" id="btnAnalyticsGoRoadmap">
+              ${SVG.compass}
+              <span>Xem chi tiết Lộ trình</span>
+            </button>
+          </div>
+
+          <div class="cds-downloads-list">
+            ${stages.map(st => {
+              const stageCourses = (st.items || []).map(it => isCourseInCatalog(it.url)).filter(Boolean);
+              const uniqueCourses = Array.from(new Map(stageCourses.map(c => [c.id, c])).values());
+              let stTotal = 0;
+              let stDone = 0;
+              uniqueCourses.forEach(c => {
+                const cSt = getCourseStats(c);
+                stTotal += cSt.total;
+                stDone += cSt.completed;
+              });
+              const stPct = stTotal > 0 ? Math.round((stDone / stTotal) * 100) : 0;
+              return `
+                <div class="cds-download-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div>
+                      <div style="font-weight:700; font-size:15px; color:var(--cds-text-primary);">${escapeHtml(st.title)}</div>
+                      <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                        ${uniqueCourses.length} khóa học trên Drive · Đã hoàn thành <strong>${stDone}/${stTotal}</strong> bài học
+                      </div>
+                    </div>
+                    <span class="cds-status-pill ${stPct === 100 ? 'cds-status-pill--synced' : (stPct > 0 ? 'cds-status-pill--running' : 'cds-status-pill--neutral')}">
+                      ${stPct === 100 ? SVG.check : SVG.chart}
+                      <span>${stPct}% Completed</span>
+                    </span>
+                  </div>
+                  <div class="cds-progress-track" style="height:8px;">
+                    <div class="cds-progress-fill ${stPct === 100 ? 'done' : ''}" style="width:${stPct}%;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      profileBody.querySelectorAll('[data-analytics-resume-lesson]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cId = btn.getAttribute('data-analytics-resume-course');
+          const lId = btn.getAttribute('data-analytics-resume-lesson');
+          const sec = parseFloat(btn.getAttribute('data-analytics-resume-sec') || '0');
+          profileModal.classList.add('hidden');
+          openLecture(cId, lId, sec > 2 ? sec : null);
+        });
+      });
+
+      document.getElementById('btnAnalyticsGoRoadmap')?.addEventListener('click', () => {
+        activeProfileTab = 'roadmap';
+        renderProfileBody();
+      });
+      return;
+    }
+
     if (activeProfileTab === 'roadmap') {
       const stages = roadmapDataCache.stages || [];
       profileBody.innerHTML = `
@@ -2375,6 +3077,7 @@ function setupModals() {
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <button class="cds-btn-outline cds-btn-sm" type="button" id="btnSwitchToAllCourses">
+              ${SVG.eye}
               <span>View All ${allCourses.length} Courses</span>
             </button>
             <button class="cds-btn-outline cds-btn-sm" type="button" id="btnSwitchToDiscoverTab">
@@ -2529,6 +3232,7 @@ function setupModals() {
               <span>Có phụ đề Tiếng Việt</span>
             </label>
             <button class="cds-btn-primary" id="btnDiscoverSearch" type="button">
+              ${SVG.search}
               <span>Search Coursera</span>
             </button>
           </div>
@@ -2634,6 +3338,7 @@ function setupModals() {
         <div class="cds-crawler-input-row">
           <input type="text" id="courseraUrlInput" class="cds-crawler-input" value="${escapeHtml(pendingCheckUrl)}" placeholder="https://www.coursera.org/learn/project-management-foundations" />
           <button class="cds-btn-primary" id="btnCheckCourseraUrl" type="button">
+            ${SVG.search}
             <span>Check Course</span>
           </button>
         </div>
@@ -2733,7 +3438,7 @@ function setupModals() {
                     <td style="color:#B42318; font-weight:600;">${escapeHtml(u.reason)}</td>
                     <td style="font-size:12px; color:var(--cds-text-secondary);">${u.checkedAt ? new Date(u.checkedAt).toLocaleString('vi-VN') : ''}</td>
                     <td>
-                      <button class="cds-btn-outline cds-btn-sm" type="button" data-delete-uncrawl="${escapeHtml(u.id)}">Remove</button>
+                      <button class="cds-btn-outline cds-btn-sm" type="button" data-delete-uncrawl="${escapeHtml(u.id)}">${SVG.trash} <span>Remove</span></button>
                     </td>
                   </tr>
                 `).join('')}
@@ -3001,13 +3706,11 @@ async function init() {
   const btnShow = document.getElementById('btnShowSidebar');
 
   btnHide?.addEventListener('click', () => {
-    sb?.classList.add('collapsed');
-    btnShow?.classList.remove('hidden');
+    toggleTheaterMode(true);
   });
 
   btnShow?.addEventListener('click', () => {
-    sb?.classList.remove('collapsed');
-    btnShow?.classList.add('hidden');
+    toggleTheaterMode(false);
   });
 
   document.getElementById('btnSidebarCourseHome')?.addEventListener('click', (e) => {

@@ -128,6 +128,7 @@ function loadUserState() {
   const defaultState = {
     progress: {},
     progressBySlug: {},
+    studyLog: {},
     notes: [],
     bookmarks: [],
     uncrawlableCourses: [],
@@ -148,6 +149,7 @@ function loadUserState() {
     const merged = {
       ...defaultState,
       ...raw,
+      studyLog: (raw.studyLog && typeof raw.studyLog === 'object') ? raw.studyLog : {},
       uncrawlableCourses: Array.isArray(raw.uncrawlableCourses) ? raw.uncrawlableCourses : [],
       preferences: { ...defaultState.preferences, ...(raw.preferences || {}) }
     };
@@ -526,7 +528,7 @@ const server = http.createServer(async (req, res) => {
     // 3. POST /api/progress
     if (req.method === 'POST' && pathname === '/api/progress') {
       const body = await readJsonBody(req);
-      const { lessonId, courseId, status, currentTime, duration } = body;
+      const { lessonId, courseId, status, currentTime, duration, deltaSec } = body;
       if (!lessonId) return sendJson(res, 400, { error: 'lessonId required' });
 
       const state = loadUserState();
@@ -541,6 +543,18 @@ const server = http.createServer(async (req, res) => {
         updatedAt: new Date().toISOString()
       };
       state.progress[lessonId] = entry;
+
+      const todayKey = new Date().toISOString().slice(0, 10);
+      if (!state.studyLog) state.studyLog = {};
+      if (!state.studyLog[todayKey]) {
+        state.studyLog[todayKey] = { secondsWatched: 0, lessonsCompleted: 0 };
+      }
+      if (typeof deltaSec === 'number' && deltaSec > 0 && deltaSec <= 120) {
+        state.studyLog[todayKey].secondsWatched = (state.studyLog[todayKey].secondsWatched || 0) + Math.round(deltaSec);
+      }
+      if (nextStatus === 'completed' && prev.status !== 'completed') {
+        state.studyLog[todayKey].lessonsCompleted = (state.studyLog[todayKey].lessonsCompleted || 0) + 1;
+      }
 
       const catalog = loadCatalog();
       const found = findLessonById(catalog, lessonId);
@@ -558,7 +572,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       saveUserState(state);
-      return sendJson(res, 200, { ok: true, progress: state.progress[lessonId], lastVisited: state.lastVisited });
+      return sendJson(res, 200, { ok: true, progress: state.progress[lessonId], lastVisited: state.lastVisited, studyLog: state.studyLog });
     }
 
     // 3b. POST /api/progress/batch (Mark entire course or module as completed / not_started)
@@ -641,9 +655,11 @@ const server = http.createServer(async (req, res) => {
     // 7. POST /api/notes & DELETE /api/notes/:id
     if (req.method === 'POST' && pathname === '/api/notes') {
       const body = await readJsonBody(req);
-      const { lessonId, courseId, timestampSec, content } = body;
-      if (!lessonId || !content || !content.trim()) {
-        return sendJson(res, 400, { error: 'lessonId and content required' });
+      const { lessonId, courseId, timestampSec, content, imageDataUrl } = body;
+      const validImage = (typeof imageDataUrl === 'string' && imageDataUrl.startsWith('data:image/')) ? imageDataUrl : null;
+      const textContent = String(content || '').trim() || (validImage ? `Slide bài giảng chụp tại mốc ${formatTime(timestampSec || 0)}` : '');
+      if (!lessonId || (!textContent && !validImage)) {
+        return sendJson(res, 400, { error: 'lessonId and content or slide image required' });
       }
       const state = loadUserState();
       const note = {
@@ -651,7 +667,8 @@ const server = http.createServer(async (req, res) => {
         lessonId,
         courseId,
         timestampSec: typeof timestampSec === 'number' ? Math.round(timestampSec) : null,
-        content: content.trim(),
+        content: textContent,
+        imageDataUrl: validImage,
         createdAt: new Date().toISOString()
       };
       state.notes.unshift(note);
