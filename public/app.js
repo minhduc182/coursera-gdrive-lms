@@ -2,14 +2,17 @@ const state = {
   catalog: null,
   user: {
     progress: {},
+    studyLog: {},
     notes: [],
     bookmarks: [],
+    highlights: {},
     lastVisited: null,
     preferences: {
       playerMode: 'html5',
       playbackRate: 1,
       subtitleLang: 'en',
-      autoAdvance: false
+      autoAdvance: true,
+      dailyGoalMinutes: 30
     }
   },
   // Views: 'course-home' | 'lecture'
@@ -18,11 +21,12 @@ const state = {
   activeCourseId: null,
   activeModuleId: null,
   activeLessonId: null,
-  activeVideoTab: 'transcript', // 'transcript' | 'notes' | 'downloads'
+  activeVideoTab: 'transcript', // 'transcript' | 'coach' | 'notes' | 'downloads'
   collapsedSections: new Set(),
   currentLessonData: null,
   transcriptFilterText: '',
-  pdfPreviewMode: 'proxy'
+  pdfPreviewMode: 'proxy',
+  quizUserAnswers: {} // { [questionId]: selectedOptionIndex }
 };
 
 // Clean Monochrome Coursera SVG Icons (Zero Emojis)
@@ -38,6 +42,7 @@ const SVG = {
   external: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`,
   note: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`,
   download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
+  upload: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`,
   alert: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
   folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`,
   compass: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>`,
@@ -55,7 +60,15 @@ const SVG = {
   award: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>`,
   star: `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
   search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
-  coach: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
+  coach: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+  bookmark: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`,
+  bookmarkFilled: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`,
+  pip: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><rect x="11" y="11" width="9" height="7" rx="1" fill="currentColor"></rect></svg>`,
+  autoNext: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>`,
+  volume: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`,
+  stop: `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"></rect></svg>`,
+  highlight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h9l3-3"></path><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path></svg>`,
+  quiz: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`
 };
 
 let hudToastTimer = null;
@@ -69,10 +82,53 @@ function showHudToast(message, iconSvg = SVG.check) {
   }
   el.innerHTML = `${iconSvg} <span>${escapeHtml(message)}</span>`;
   el.classList.remove('hidden');
+  requestAnimationFrame(() => el.classList.add('visible'));
   clearTimeout(hudToastTimer);
   hudToastTimer = setTimeout(() => {
-    el.classList.add('hidden');
-  }, 2600);
+    el.classList.remove('visible');
+    setTimeout(() => el.classList.add('hidden'), 180);
+  }, 2500);
+}
+
+function isLessonBookmarked(lessonId) {
+  return Array.isArray(state.user.bookmarks) && state.user.bookmarks.includes(lessonId);
+}
+
+async function toggleLessonBookmark(lessonId) {
+  if (!lessonId) return;
+  const res = await apiPost('/api/bookmarks/toggle', { lessonId });
+  state.user.bookmarks = res.bookmarks || [];
+  const pinned = isLessonBookmarked(lessonId);
+  renderHeader();
+
+  // Update lecture topbar button if visible
+  const bcBtn = document.getElementById('btnBookmarkCurrentLesson');
+  if (bcBtn && state.activeLessonId === lessonId) {
+    bcBtn.className = `${pinned ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm`;
+    bcBtn.innerHTML = `${pinned ? SVG.bookmarkFilled : SVG.bookmark} <span>${pinned ? 'Đã ghim (B)' : 'Ghim bài (B)'}</span>`;
+  }
+
+  // Update any syllabus/sidebar bookmark buttons
+  document.querySelectorAll(`[data-bookmark-lesson="${lessonId}"]`).forEach(btn => {
+    btn.classList.toggle('active', pinned);
+    btn.innerHTML = pinned ? SVG.bookmarkFilled : SVG.bookmark;
+  });
+
+  showHudToast(
+    pinned ? 'Đã ghim bài học vào Kho lưu trữ (Saved)!' : 'Đã bỏ ghim bài học.',
+    pinned ? SVG.bookmarkFilled : SVG.bookmark
+  );
+}
+
+function stopReadingTts() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  const btn = document.getElementById('btnReadingTtsToggle');
+  if (btn) {
+    btn.classList.remove('cds-btn-completed');
+    btn.innerHTML = `${SVG.volume} <span>Đọc bài (TTS)</span>`;
+  }
 }
 
 function toggleTheaterMode(forceState = null) {
@@ -238,7 +294,24 @@ function renderHeader() {
     }).join('');
   }
 
-  document.getElementById('totalNotesBadge').textContent = state.user.notes.length;
+  const notesBadge = document.getElementById('totalNotesBadge');
+  if (notesBadge) notesBadge.textContent = (state.user.notes || []).length;
+
+  const bmBadge = document.getElementById('totalBookmarksBadge');
+  if (bmBadge) bmBadge.textContent = (state.user.bookmarks || []).length;
+
+  // Sync Daily Study Goal pill on Header
+  const goalBtn = document.getElementById('btnHeaderDailyGoal');
+  const goalText = document.getElementById('headerDailyGoalText');
+  if (goalBtn && goalText) {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const todaySec = Number(state.user.studyLog?.[todayKey]?.secondsWatched || 0);
+    const todayMin = Math.round(todaySec / 60);
+    const goalMin = Number(state.user.preferences?.dailyGoalMinutes || 30);
+    goalText.textContent = `${todayMin}/${goalMin}p`;
+    goalBtn.classList.toggle('goal-reached', todayMin >= goalMin);
+    goalBtn.title = `Mục tiêu học hôm nay: ${todayMin}/${goalMin} phút (${Math.min(100, Math.round((todayMin / goalMin) * 100))}%) — Bấm để mở Thống kê & Biểu đồ nhiệt`;
+  }
 
   const rootDriveEl = document.getElementById('rootDriveLink');
   if (rootDriveEl && state.catalog.specialization?.folderUrl) {
@@ -257,6 +330,7 @@ function renderHeader() {
 }
 
 function pauseActiveVideo() {
+  stopReadingTts();
   const v = document.getElementById('activeVideoPlayer');
   if (v && !v.paused) v.pause();
 }
@@ -398,6 +472,7 @@ function renderCourseHome() {
         const resumeSec = (prog?.currentTime > 3 && !isDone) ? prog.currentTime : 0;
         const durSec = prog?.duration || les.durationSec || 0;
         const resumePct = (resumeSec > 0 && durSec > 0) ? Math.min(96, Math.max(4, Math.round((resumeSec / durSec) * 100))) : 0;
+        const isPinned = isLessonBookmarked(les.id);
 
         return `
           <div class="cds-syllabus-item" data-open-lesson="${les.id}">
@@ -420,12 +495,17 @@ function renderCourseHome() {
                 ` : ''}
               </div>
             </div>
-            ${(isNextUp || resumeSec > 0) ? `
-              <button class="cds-btn-primary cds-btn-sm" data-open-lesson="${les.id}">
-                ${SVG.play}
-                <span>${resumeSec > 0 ? `Học tiếp (${formatClock(resumeSec)})` : 'Start'}</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+              <button class="cds-bookmark-icon-btn ${isPinned ? 'active' : ''}" type="button" data-bookmark-lesson="${les.id}" title="${isPinned ? 'Bỏ ghim bài học' : 'Ghim bài học trọng tâm'}">
+                ${isPinned ? SVG.bookmarkFilled : SVG.bookmark}
               </button>
-            ` : ''}
+              ${(isNextUp || resumeSec > 0) ? `
+                <button class="cds-btn-primary cds-btn-sm" data-open-lesson="${les.id}">
+                  ${SVG.play}
+                  <span>${resumeSec > 0 ? `Học tiếp (${formatClock(resumeSec)})` : 'Start'}</span>
+                </button>
+              ` : ''}
+            </div>
           </div>
         `;
       }).join('');
@@ -729,9 +809,17 @@ function renderCourseHome() {
     });
   });
 
+  dashEl.querySelectorAll('[data-bookmark-lesson]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const lId = btn.getAttribute('data-bookmark-lesson');
+      await toggleLessonBookmark(lId);
+    });
+  });
+
   dashEl.querySelectorAll('[data-open-lesson]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (e.target.closest('[data-lightbox-src]')) return;
+      if (e.target.closest('[data-lightbox-src]') || e.target.closest('[data-bookmark-lesson]')) return;
       e.stopPropagation();
       const lId = el.getAttribute('data-open-lesson');
       const seekStr = el.getAttribute('data-seek');
@@ -874,6 +962,7 @@ async function toggleLessonCompleted(lessonId, forceCompleted = null) {
   });
 
   state.user.progress[lessonId] = res.progress;
+  if (res.studyLog) state.user.studyLog = res.studyLog;
   renderHeader();
 
   if (state.currentView === 'lecture') {
@@ -894,6 +983,8 @@ function updateCompleteButtonsUI() {
 
 async function selectLesson(lessonId, seekTime = null) {
   clearAutoCompleteTimer();
+  stopReadingTts();
+  state.quizUserAnswers = {};
   const ctx = findLessonContext(lessonId);
   if (!ctx) return;
 
@@ -948,7 +1039,12 @@ function renderLectureBreadcrumbBar(ctx) {
 
   const navEl = document.getElementById('classroomPrevNext');
   const isTheater = document.getElementById('courseSidebar')?.classList.contains('collapsed');
+  const isPinned = isLessonBookmarked(lesson.id);
   navEl.innerHTML = `
+    <button class="${isPinned ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" id="btnBookmarkCurrentLesson" type="button" title="Ghim bài học trọng tâm (Phím tắt: B)">
+      ${isPinned ? SVG.bookmarkFilled : SVG.bookmark}
+      <span>${isPinned ? 'Đã ghim (B)' : 'Ghim bài (B)'}</span>
+    </button>
     <button class="${isTheater ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" id="btnTheaterMode" type="button" title="Phím tắt: T">
       ${SVG.theater}
       <span>${isTheater ? 'Thoát Tập trung (T)' : 'Chế độ Tập trung (T)'}</span>
@@ -962,6 +1058,10 @@ function renderLectureBreadcrumbBar(ctx) {
       ${SVG.chevronRight}
     </button>
   `;
+
+  document.getElementById('btnBookmarkCurrentLesson')?.addEventListener('click', () => {
+    toggleLessonBookmark(lesson.id);
+  });
 
   document.getElementById('btnTheaterMode')?.addEventListener('click', () => {
     toggleTheaterMode();
@@ -1013,9 +1113,13 @@ function buildVideoLectureHtml(ctx, contentData) {
         <div style="font-weight:600;">Streaming video from Google Drive (${formatBytes(lesson.video.size)})...</div>
       </div>
       <div id="resumePlaybackBanner" class="cds-resume-toast hidden"></div>
+      <div id="autoNextOverlayBanner" class="cds-resume-toast hidden"></div>
       <video id="activeVideoPlayer" controls preload="auto" crossorigin="anonymous" src="/api/drive/media/${lesson.video.id}"></video>
       <div id="customSubtitleOverlay" class="cds-subtitle-overlay"></div>
     `;
+
+  const autoAdvOn = prefs.autoAdvance !== false;
+  const curRate = Number(prefs.playbackRate) || 1;
 
   return `
     <!-- 1. Video Player at the Top -->
@@ -1031,6 +1135,14 @@ function buildVideoLectureHtml(ctx, contentData) {
           <button class="cds-btn-outline" id="btnSnapSlideQuick" type="button" title="Chụp nhanh khung hình Slide hiện tại vào Ghi chú (Phím tắt: S)">
             ${SVG.camera}
             <span>Chụp Slide (S)</span>
+          </button>
+          <button class="cds-btn-outline" id="btnTogglePip" type="button" title="Thu nhỏ video thành Cửa sổ nổi góc màn hình (Phím tắt: P)">
+            ${SVG.pip}
+            <span>Cửa sổ nổi (P)</span>
+          </button>
+          <button class="${autoAdvOn ? 'cds-btn-completed' : 'cds-btn-outline'}" id="btnToggleAutoAdvance" type="button" title="Tự động chuyển sang bài học tiếp theo khi hết video">
+            ${SVG.autoNext}
+            <span>Tự qua bài: ${autoAdvOn ? 'Bật' : 'Tắt'}</span>
           </button>
         ` : ''}
         <button class="cds-btn-outline" id="btnSaveVideoNote" type="button" title="Mở ô nhập ghi chú tại mốc thời gian hiện tại (Phím tắt: N)">
@@ -1050,7 +1162,7 @@ function buildVideoLectureHtml(ctx, contentData) {
           Transcript
         </button>
         <button class="cds-u-tab ${state.activeVideoTab === 'coach' ? 'active' : ''}" data-vtab="coach">
-          Coursera Coach (Tóm tắt &amp; Ôn tập)
+          Coursera Coach &amp; Quiz (${(contentData.studyGuide?.quiz || []).length})
         </button>
         <button class="cds-u-tab ${state.activeVideoTab === 'notes' ? 'active' : ''}" data-vtab="notes" id="videoNotesTabBtn">
           Notes (${notesCount})
@@ -1061,6 +1173,12 @@ function buildVideoLectureHtml(ctx, contentData) {
       </div>
 
       <div class="cds-tabs-right-controls">
+        <div class="cds-speed-pills" title="Tốc độ phát video (tự động ghi nhớ cho mọi bài học — Phím tắt: < / >)">
+          ${[1, 1.25, 1.5, 1.75, 2].map(r => `
+            <button type="button" class="cds-speed-pill ${curRate === r ? 'active' : ''}" data-quick-speed="${r}">${r}x</button>
+          `).join('')}
+        </div>
+
         <select id="selectSubtitleLang" class="cds-select-sm" title="Transcript & Subtitle language">
           <option value="en" ${subLang === 'en' ? 'selected' : ''}>English</option>
           ${hasAnySub ? `<option value="vi" ${subLang === 'vi' ? 'selected' : ''}>Tiếng Việt ${hasViReady ? '' : '(Auto)'}</option>` : ''}
@@ -1069,7 +1187,7 @@ function buildVideoLectureHtml(ctx, contentData) {
         </select>
 
         <select id="selectPlaybackRate" class="cds-select-sm" title="Playback Speed">
-          ${[0.75, 1, 1.25, 1.5, 1.75, 2].map(r => `<option value="${r}" ${Number(prefs.playbackRate) === r ? 'selected' : ''}>${r}x</option>`).join('')}
+          ${[0.75, 1, 1.25, 1.5, 1.75, 2].map(r => `<option value="${r}" ${curRate === r ? 'selected' : ''}>${r}x</option>`).join('')}
         </select>
 
         <select id="selectPlayerMode" class="cds-select-sm" title="Video Stream Source">
@@ -1323,8 +1441,44 @@ async function quickSnapVideoSlide(ctx) {
   showHudToast(`Đã chụp Slide tại ${formatClock(timestampSec)} vào Ghi chú!`, SVG.camera);
 }
 
+const SPEED_STEPS = [0.75, 1, 1.25, 1.5, 1.75, 2];
+
+async function applyVideoPlaybackSpeed(nextRate) {
+  const rate = Number(nextRate) || 1;
+  state.user.preferences.playbackRate = rate;
+  const videoEl = document.getElementById('activeVideoPlayer');
+  if (videoEl) videoEl.playbackRate = rate;
+  const sel = document.getElementById('selectPlaybackRate');
+  if (sel) sel.value = String(rate);
+  document.querySelectorAll('[data-quick-speed]').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.getAttribute('data-quick-speed')) === rate);
+  });
+  showHudToast(`Tốc độ phát: ${rate}x (Đã ghi nhớ)`, SVG.clock);
+  await apiPost('/api/preferences', { playbackRate: rate }).catch(() => {});
+}
+
+function stepVideoPlaybackSpeed(direction) {
+  const cur = Number(state.user.preferences.playbackRate) || 1;
+  const idx = SPEED_STEPS.indexOf(cur);
+  const nextIdx = idx >= 0
+    ? Math.max(0, Math.min(SPEED_STEPS.length - 1, idx + direction))
+    : 1;
+  applyVideoPlaybackSpeed(SPEED_STEPS[nextIdx]);
+}
+
+let autoNextInterval = null;
+function clearAutoNextCountdown() {
+  if (autoNextInterval) {
+    clearInterval(autoNextInterval);
+    autoNextInterval = null;
+  }
+  const banner = document.getElementById('autoNextOverlayBanner');
+  if (banner) banner.classList.add('hidden');
+}
+
 function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   const { course, lesson, nextLesson } = ctx;
+  clearAutoNextCountdown();
 
   renderCourseraParagraphTranscript(ctx, contentData);
   setupNotesEvents(ctx, contentData);
@@ -1345,6 +1499,42 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   // 1-click Snap Slide button
   document.getElementById('btnSnapSlideQuick')?.addEventListener('click', () => {
     quickSnapVideoSlide(ctx);
+  });
+
+  // Picture-in-Picture (PiP) button
+  document.getElementById('btnTogglePip')?.addEventListener('click', async () => {
+    const v = document.getElementById('activeVideoPlayer');
+    if (!v) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        showHudToast('Đã đóng Cửa sổ nổi (PiP)', SVG.pip);
+      } else if (v.requestPictureInPicture) {
+        await v.requestPictureInPicture();
+        showHudToast('Đã bật Cửa sổ nổi (Picture-in-Picture)', SVG.pip);
+      }
+    } catch (err) {
+      showHudToast('Hãy phát video trước khi bật Cửa sổ nổi.', SVG.alert);
+    }
+  });
+
+  // Auto-Advance toggle button
+  document.getElementById('btnToggleAutoAdvance')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const nextVal = state.user.preferences.autoAdvance === false;
+    state.user.preferences.autoAdvance = nextVal;
+    btn.className = nextVal ? 'cds-btn-completed' : 'cds-btn-outline';
+    btn.innerHTML = `${SVG.autoNext} <span>Tự qua bài: ${nextVal ? 'Bật' : 'Tắt'}</span>`;
+    if (!nextVal) clearAutoNextCountdown();
+    showHudToast(`Tự động chuyển bài: ${nextVal ? 'Đã BẬT' : 'Đã TẮT'}`, SVG.autoNext);
+    await apiPost('/api/preferences', { autoAdvance: nextVal }).catch(() => {});
+  });
+
+  // Quick Speed Pill Buttons
+  document.querySelectorAll('[data-quick-speed]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyVideoPlaybackSpeed(parseFloat(btn.getAttribute('data-quick-speed')));
+    });
   });
 
   // Save note button opens Notes tab & focuses textarea
@@ -1391,10 +1581,7 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
   const videoEl = document.getElementById('activeVideoPlayer');
   if (rateSelect) {
     rateSelect.addEventListener('change', async () => {
-      const rate = parseFloat(rateSelect.value);
-      state.user.preferences.playbackRate = rate;
-      if (videoEl) videoEl.playbackRate = rate;
-      await apiPost('/api/preferences', { playbackRate: rate });
+      await applyVideoPlaybackSpeed(parseFloat(rateSelect.value));
     });
   }
 
@@ -1584,23 +1771,80 @@ function setupVideoLectureEvents(ctx, contentData, seekTime = null) {
 
   videoEl.addEventListener('ended', async () => {
     await toggleLessonCompleted(lesson.id, true);
+
+    if (state.user.preferences.autoAdvance !== false && nextLesson) {
+      const banner = document.getElementById('autoNextOverlayBanner');
+      if (banner) {
+        let remain = 5;
+        const renderCountdown = () => {
+          banner.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${SVG.autoNext}
+              <span>Đã hoàn thành! Tự chuyển sang <strong>${escapeHtml(nextLesson.title)}</strong> sau <strong>${remain}s</strong>...</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="cds-btn-primary cds-btn-sm" id="btnAutoNextNow">
+                ${SVG.play}
+                <span>Qua bài ngay</span>
+              </button>
+              <button type="button" class="cds-btn-outline cds-btn-sm" id="btnCancelAutoNext">
+                ${SVG.close}
+                <span>Ở lại bài này</span>
+              </button>
+            </div>
+          `;
+          document.getElementById('btnAutoNextNow')?.addEventListener('click', () => {
+            clearAutoNextCountdown();
+            selectLesson(nextLesson.id);
+          });
+          document.getElementById('btnCancelAutoNext')?.addEventListener('click', () => {
+            clearAutoNextCountdown();
+          });
+        };
+        banner.classList.remove('hidden');
+        renderCountdown();
+        clearInterval(autoNextInterval);
+        autoNextInterval = setInterval(() => {
+          remain -= 1;
+          if (remain <= 0) {
+            clearAutoNextCountdown();
+            selectLesson(nextLesson.id);
+          } else {
+            renderCountdown();
+          }
+        }, 1000);
+      } else {
+        selectLesson(nextLesson.id);
+      }
+    }
   });
 }
 
 // ── Coursera Coach Study Guide & Study Guide Markdown Exporter ──
 function buildCoachPanelHtml(ctx, contentData) {
   const { course, module, lesson } = ctx;
-  const guide = contentData.studyGuide || { takeaways: [], glossary: [], flashcards: [] };
+  const guide = contentData.studyGuide || { takeaways: [], glossary: [], flashcards: [], quiz: [] };
+  const quizList = guide.quiz || [];
   const hasViReady = Boolean(contentData.cuesVi && contentData.cuesVi.length > 0);
+
+  let answeredCount = 0;
+  let correctCount = 0;
+  for (const q of quizList) {
+    if (typeof state.quizUserAnswers[q.id] === 'number') {
+      answeredCount++;
+      if (state.quizUserAnswers[q.id] === q.correctIndex) correctCount++;
+    }
+  }
+  const scorePct = answeredCount > 0 ? Math.round((correctCount / quizList.length) * 100) : 0;
 
   return `
     <div class="cds-coach-panel">
       <div class="cds-coach-banner">
         <div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
-            <span class="cds-status-pill cds-status-pill--running">Coursera Coach</span>
+            <span class="cds-status-pill cds-status-pill--running">${SVG.coach} <span>Coursera Coach &amp; Practice Quiz</span></span>
             <span style="font-size:15px; font-weight:700; color:var(--cds-text-primary);">
-              Tóm tắt Trọng tâm, Thuật ngữ BA/PM/Product &amp; Câu hỏi Ôn tập
+              Tóm tắt Trọng tâm, Thuật ngữ Chuyên ngành &amp; Trắc nghiệm Chấm điểm
             </span>
           </div>
           <div style="font-size:13px; color:var(--cds-text-secondary);">
@@ -1621,10 +1865,82 @@ function buildCoachPanelHtml(ctx, contentData) {
         </div>
       </div>
 
-      <!-- 1. Key Takeaways -->
+      <!-- 1. Interactive 4-Choice Practice Quiz -->
+      ${quizList.length > 0 ? `
+        <div class="cds-coach-section">
+          <div class="cds-coach-section-title">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              ${SVG.quiz}
+              <span>1. Bài Kiểm tra Trắc nghiệm 4 Đáp án (Practice Quiz &amp; Mock Exam)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="cds-status-pill ${answeredCount === quizList.length && quizList.length > 0 ? 'cds-status-pill--synced' : 'cds-status-pill--running'}" id="quizScoreBadge">
+                ${SVG.award}
+                <span>Điểm: ${correctCount}/${quizList.length} (${scorePct}%)</span>
+              </span>
+              <button class="cds-btn-outline cds-btn-sm" type="button" id="btnResetQuiz">
+                ${SVG.restart}
+                <span>Làm lại đề</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="cds-quiz-list">
+            ${quizList.map((q, qIdx) => {
+              const userChoice = state.quizUserAnswers[q.id];
+              const isAnswered = typeof userChoice === 'number';
+              const isRight = isAnswered && userChoice === q.correctIndex;
+              return `
+                <div class="cds-quiz-card" id="quiz_card_${escapeHtml(q.id)}">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:6px;">
+                    <span class="cds-status-pill cds-status-pill--neutral">Câu ${qIdx + 1}/${quizList.length} · ${escapeHtml(q.category || 'Kiến thức')}</span>
+                    ${typeof q.timeSec === 'number' ? `
+                      <button class="cds-btn-outline cds-btn-sm" type="button" data-coach-seek="${q.timeSec}">
+                        ${SVG.play}
+                        <span>Xem đoạn video giải thích (${escapeHtml(q.timeStr || formatClock(q.timeSec))})</span>
+                      </button>
+                    ` : ''}
+                  </div>
+                  <div class="cds-quiz-question">${escapeHtml(q.question)}</div>
+                  <div class="cds-quiz-options">
+                    ${(q.options || []).map((opt, optIdx) => {
+                      let optClass = '';
+                      let statusSvg = '';
+                      if (isAnswered) {
+                        if (optIdx === q.correctIndex) {
+                          optClass = 'correct';
+                          statusSvg = SVG.check;
+                        } else if (optIdx === userChoice) {
+                          optClass = 'wrong';
+                          statusSvg = SVG.close;
+                        }
+                      }
+                      return `
+                        <button type="button" class="cds-quiz-option ${optClass}" data-quiz-q="${escapeHtml(q.id)}" data-quiz-opt="${optIdx}">
+                          <span class="cds-quiz-opt-letter">${escapeHtml(opt.label)}</span>
+                          <span style="flex:1; text-align:left;">${escapeHtml(opt.text)}</span>
+                          ${statusSvg ? `<span style="flex-shrink:0;">${statusSvg}</span>` : ''}
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                  <div class="cds-quiz-explanation ${isAnswered ? '' : 'hidden'} ${isRight ? 'correct' : 'wrong'}" id="quiz_exp_${escapeHtml(q.id)}">
+                    <div style="font-weight:700; margin-bottom:3px; display:flex; align-items:center; gap:6px;">
+                      ${isRight ? `${SVG.check} <span>Chính xác!</span>` : `${SVG.alert} <span>Chưa chính xác — Đáp án đúng là ${escapeHtml(q.options?.[q.correctIndex]?.label || '')}</span>`}
+                    </div>
+                    <div>${escapeHtml(q.explanation || '')}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- 2. Key Takeaways -->
       <div class="cds-coach-section">
         <div class="cds-coach-section-title">
-          <span>1. Tóm tắt ý chính theo mạch bài giảng (Key Takeaways)</span>
+          <span>2. Tóm tắt ý chính theo mạch bài giảng (Key Takeaways)</span>
           <span class="cds-status-pill cds-status-pill--neutral">${guide.takeaways.length} phần</span>
         </div>
         ${guide.takeaways.length === 0 ? `
@@ -1651,10 +1967,10 @@ function buildCoachPanelHtml(ctx, contentData) {
         `}
       </div>
 
-      <!-- 2. Domain Glossary -->
+      <!-- 3. Domain Glossary -->
       <div class="cds-coach-section">
         <div class="cds-coach-section-title">
-          <span>2. Thuật ngữ Chuyên ngành BA · PM · Product liên quan</span>
+          <span>3. Thuật ngữ Chuyên ngành BA · PM · Product liên quan</span>
           <span class="cds-status-pill cds-status-pill--synced">${guide.glossary.length} thuật ngữ</span>
         </div>
         <div class="cds-glossary-grid">
@@ -1672,10 +1988,10 @@ function buildCoachPanelHtml(ctx, contentData) {
         </div>
       </div>
 
-      <!-- 3. Self-Check Flashcards -->
+      <!-- 4. Self-Check Flashcards -->
       <div class="cds-coach-section">
         <div class="cds-coach-section-title">
-          <span>3. Câu hỏi Tự kiểm tra &amp; Ôn tập nhanh (Flashcards)</span>
+          <span>4. Câu hỏi Tự kiểm tra &amp; Ôn tập nhanh (Flashcards)</span>
           <span style="font-size:12px; font-weight:600; color:var(--cds-text-secondary);">Bấm để lật xem giải thích</span>
         </div>
         <div>
@@ -1698,6 +2014,37 @@ function buildCoachPanelHtml(ctx, contentData) {
 }
 
 function setupCoachEvents(ctx, contentData) {
+  const refreshCoachHtml = () => {
+    const coachContainer = document.getElementById('tabBodyCoach') || document.getElementById('readingCoachContainer');
+    if (coachContainer) {
+      coachContainer.innerHTML = buildCoachPanelHtml(ctx, contentData);
+      setupCoachEvents(ctx, contentData);
+    }
+  };
+
+  document.querySelectorAll('[data-quiz-opt]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qId = btn.getAttribute('data-quiz-q');
+      const optIdx = parseInt(btn.getAttribute('data-quiz-opt'), 10);
+      if (!qId || Number.isNaN(optIdx)) return;
+      state.quizUserAnswers[qId] = optIdx;
+      refreshCoachHtml();
+
+      const quizList = contentData.studyGuide?.quiz || [];
+      const answered = quizList.filter(q => typeof state.quizUserAnswers[q.id] === 'number').length;
+      if (answered === quizList.length && quizList.length > 0) {
+        const right = quizList.filter(q => state.quizUserAnswers[q.id] === q.correctIndex).length;
+        showHudToast(`Hoàn thành Quiz: Đúng ${right}/${quizList.length} câu (${Math.round((right / quizList.length) * 100)}%)!`, SVG.award);
+      }
+    });
+  });
+
+  document.getElementById('btnResetQuiz')?.addEventListener('click', () => {
+    state.quizUserAnswers = {};
+    refreshCoachHtml();
+    showHudToast('Đã tạo lại bài kiểm tra trắc nghiệm.', SVG.restart);
+  });
+
   document.querySelectorAll('[data-coach-seek]').forEach(btn => {
     btn.addEventListener('click', () => {
       const sec = parseFloat(btn.getAttribute('data-coach-seek'));
@@ -1705,7 +2052,8 @@ function setupCoachEvents(ctx, contentData) {
       if (v && !Number.isNaN(sec)) {
         v.currentTime = sec;
         v.play().catch(() => {});
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const mainStage = document.getElementById('lessonStage');
+        if (mainStage) mainStage.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   });
@@ -1798,10 +2146,115 @@ function exportStudyGuideMarkdown(courseObj, activeCtx = null, activeContentData
   URL.revokeObjectURL(url);
 }
 
-// ── Reading / Supplement View ────────────────────────────────
+// ── Reading / Supplement View (Highlight + Bilingual EN-VI + Audio TTS) ───────────────────────
+const readingBilingualState = {}; // lessonId -> { active: boolean, blocksVi: string[] }
+
+function renderReadingHighlightsSummaryHtml(lessonId) {
+  const list = state.user.highlights?.[lessonId] || [];
+  if (list.length === 0) return '';
+  const colorLabel = {
+    yellow: { bg: '#FEF08A', border: '#FACC15', name: 'Quan trọng' },
+    green: { bg: '#BBF7D0', border: '#4ADE80', name: 'Định nghĩa' },
+    blue: { bg: '#BAE6FD', border: '#38BDF8', name: 'Ví dụ / Công thức' }
+  };
+  return `
+    <div class="cds-coach-section" style="margin-bottom:18px; background:#FFFEF5; border-color:#FDE047;">
+      <div class="cds-coach-sec-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="display:inline-flex; align-items:center; gap:6px;">
+          ${SVG.highlight}
+          <span>Đoạn văn đã tô sáng trong bài đọc này (${list.length})</span>
+        </span>
+        <span style="font-size:12px; font-weight:500; color:var(--cds-text-secondary);">Bôi đen bất kỳ câu nào bên dưới rồi bấm nút Tô sáng trên thanh công cụ</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        ${list.map(hl => {
+          const c = colorLabel[hl.color] || colorLabel.yellow;
+          return `
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:8px 12px; background:#FFFFFF; border-left:4px solid ${c.border}; border-radius:6px; border:1px solid var(--cds-border-light); border-left-width:4px; border-left-color:${c.border};">
+              <div style="font-size:13.5px; color:var(--cds-text-primary); line-height:1.5;">
+                <span style="background:${c.bg}; padding:1px 6px; border-radius:4px; font-size:11px; font-weight:700; margin-right:6px;">${c.name}</span>
+                "${escapeHtml(hl.text)}"
+              </div>
+              <button type="button" class="cds-icon-close" data-delete-hl="${escapeHtml(hl.id)}" title="Xóa tô sáng" aria-label="Xóa tô sáng">
+                ${SVG.trash}
+              </button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function applySavedHighlightsToReadingDom(lessonId) {
+  const articleEl = document.getElementById('readingArticleBody');
+  if (!articleEl) return;
+  const list = state.user.highlights?.[lessonId] || [];
+  if (list.length === 0) return;
+
+  // Walk text nodes and wrap matching highlight snippets
+  const walker = document.createTreeWalker(articleEl, NodeFilter.SHOW_TEXT, null);
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.parentElement && !node.parentElement.closest('mark, .cds-reading-bi-vi, script, style')) {
+      textNodes.push(node);
+    }
+  }
+
+  for (const hl of list) {
+    const snippet = String(hl.text || '').trim();
+    if (snippet.length < 4) continue;
+    const targetSnippet = snippet.slice(0, 140);
+    for (const tNode of textNodes) {
+      if (!tNode.parentNode) continue;
+      const val = tNode.nodeValue || '';
+      const idx = val.toLowerCase().indexOf(targetSnippet.toLowerCase());
+      if (idx !== -1) {
+        const before = val.slice(0, idx);
+        const match = val.slice(idx, idx + targetSnippet.length);
+        const after = val.slice(idx + targetSnippet.length);
+        const frag = document.createDocumentFragment();
+        if (before) frag.appendChild(document.createTextNode(before));
+        const mark = document.createElement('mark');
+        mark.className = `cds-reading-hl cds-reading-hl--${hl.color || 'yellow'}`;
+        mark.textContent = match;
+        frag.appendChild(mark);
+        if (after) frag.appendChild(document.createTextNode(after));
+        tNode.parentNode.replaceChild(frag, tNode);
+        break;
+      }
+    }
+  }
+}
+
+function injectBilingualParagraphsIntoReadingDom(lessonId) {
+  const articleEl = document.getElementById('readingArticleBody');
+  if (!articleEl) return;
+  articleEl.querySelectorAll('.cds-reading-bi-vi').forEach(el => el.remove());
+
+  const bi = readingBilingualState[lessonId];
+  if (!bi || !bi.active || !Array.isArray(bi.blocksVi) || bi.blocksVi.length === 0) return;
+
+  const blockEls = Array.from(articleEl.querySelectorAll('p, li, h2, h3, blockquote'))
+    .filter(el => (el.textContent || '').trim().length >= 15);
+
+  let viIdx = 0;
+  for (const el of blockEls) {
+    if (viIdx >= bi.blocksVi.length) break;
+    const viText = bi.blocksVi[viIdx++];
+    if (!viText) continue;
+    const viDiv = document.createElement('div');
+    viDiv.className = 'cds-reading-bi-vi';
+    viDiv.textContent = viText;
+    el.insertAdjacentElement('afterend', viDiv);
+  }
+}
+
 function buildReadingLectureHtml(ctx, contentData) {
   const { lesson, nextLesson } = ctx;
   const isDone = state.user.progress[lesson.id]?.status === 'completed';
+  const biActive = Boolean(readingBilingualState[lesson.id]?.active);
 
   const pdfBlocks = (lesson.pdfs || []).map(pdf => {
     const src = state.pdfPreviewMode === 'gdrive' ? pdf.previewUrl : `/api/drive/media/${pdf.id}`;
@@ -1828,7 +2281,7 @@ function buildReadingLectureHtml(ctx, contentData) {
 
   return `
     <div class="cds-reading-container">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
         <h1 class="cds-lecture-h1">${escapeHtml(lesson.title)}</h1>
         <a class="cds-btn-outline" href="${lesson.instructions?.viewUrl || lesson.folderUrl}" target="_blank" rel="noopener">
           ${SVG.external}
@@ -1837,14 +2290,51 @@ function buildReadingLectureHtml(ctx, contentData) {
       </div>
 
       ${contentData.htmlContent ? `
-        <div class="cds-reading-body">
+        <div class="cds-reading-toolbar">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="${biActive ? 'cds-btn-completed' : 'cds-btn-outline'} cds-btn-sm" id="btnTranslateReadingVi">
+              ${SVG.translate}
+              <span>${biActive ? 'Song ngữ Anh – Việt: Bật' : 'Dịch Song ngữ Anh – Việt'}</span>
+            </button>
+            <button type="button" class="cds-btn-outline cds-btn-sm" id="btnReadingTtsToggle">
+              ${SVG.volume}
+              <span>Đọc bài (Audio TTS)</span>
+            </button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:700; color:var(--cds-text-secondary);">Bôi đen chữ để tô sáng:</span>
+            <button type="button" class="cds-btn-outline cds-btn-sm" id="btnHlYellow" style="border-color:#EAB308; background:#FEF9C3; color:#854D0E;" title="Bôi đen đoạn văn rồi bấm để tô vàng">
+              ${SVG.highlight}
+              <span>Tô vàng</span>
+            </button>
+            <button type="button" class="cds-btn-outline cds-btn-sm" id="btnHlGreen" style="border-color:#22C55E; background:#DCFCE7; color:#166534;" title="Bôi đen đoạn văn rồi bấm để tô xanh lá">
+              ${SVG.highlight}
+              <span>Tô xanh lá</span>
+            </button>
+            <button type="button" class="cds-btn-outline cds-btn-sm" id="btnHlBlue" style="border-color:#0EA5E9; background:#E0F2FE; color:#075985;" title="Bôi đen đoạn văn rồi bấm để tô xanh dương">
+              ${SVG.highlight}
+              <span>Tô xanh dương</span>
+            </button>
+            <button type="button" class="cds-btn-outline cds-btn-sm" id="btnHlToNote" title="Lưu đoạn văn đang bôi đen vào sổ tay Ghi chú">
+              ${SVG.note}
+              <span>Lưu vào Ghi chú</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="readingHighlightsBox">
+          ${renderReadingHighlightsSummaryHtml(lesson.id)}
+        </div>
+
+        <div class="cds-reading-body" id="readingArticleBody">
           ${contentData.htmlContent}
         </div>
       ` : ''}
 
       ${pdfBlocks}
 
-      <div style="margin-top:28px;">
+      <div id="readingCoachContainer" style="margin-top:28px;">
         ${buildCoachPanelHtml(ctx, contentData)}
       </div>
 
@@ -1866,6 +2356,134 @@ function buildReadingLectureHtml(ctx, contentData) {
 function setupReadingLectureEvents(ctx, contentData) {
   const { course, lesson, nextLesson } = ctx;
   setupCoachEvents(ctx, contentData);
+
+  applySavedHighlightsToReadingDom(lesson.id);
+  injectBilingualParagraphsIntoReadingDom(lesson.id);
+
+  function bindHighlightDeleteButtons() {
+    document.querySelectorAll('#readingHighlightsBox [data-delete-hl]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const hlId = btn.getAttribute('data-delete-hl');
+        if (!hlId) return;
+        const res = await apiDelete(`/api/highlights/${encodeURIComponent(lesson.id)}/${encodeURIComponent(hlId)}`);
+        if (!state.user.highlights) state.user.highlights = {};
+        state.user.highlights[lesson.id] = res.highlights || [];
+        renderLectureContent(ctx, contentData);
+        showHudToast('Đã xóa đoạn tô sáng', SVG.trash);
+      });
+    });
+  }
+  bindHighlightDeleteButtons();
+
+  async function saveSelectedReadingHighlight(color) {
+    const sel = window.getSelection();
+    const text = (sel ? sel.toString() : '').trim();
+    if (!text || text.length < 3) {
+      showHudToast('Hãy dùng chuột bôi đen một câu trong bài đọc trước khi bấm Tô sáng!', SVG.alert);
+      return;
+    }
+    const res = await apiPost('/api/highlights', {
+      lessonId: lesson.id,
+      courseId: course.id,
+      text,
+      color
+    });
+    if (!state.user.highlights) state.user.highlights = {};
+    state.user.highlights[lesson.id] = res.highlights || [];
+    sel.removeAllRanges();
+    renderLectureContent(ctx, contentData);
+    showHudToast('Đã tô sáng và lưu đoạn văn trọng tâm!', SVG.highlight);
+  }
+
+  document.getElementById('btnHlYellow')?.addEventListener('click', () => saveSelectedReadingHighlight('yellow'));
+  document.getElementById('btnHlGreen')?.addEventListener('click', () => saveSelectedReadingHighlight('green'));
+  document.getElementById('btnHlBlue')?.addEventListener('click', () => saveSelectedReadingHighlight('blue'));
+
+  document.getElementById('btnHlToNote')?.addEventListener('click', async () => {
+    const sel = window.getSelection();
+    const text = (sel ? sel.toString() : '').trim();
+    if (!text || text.length < 3) {
+      showHudToast('Hãy bôi đen đoạn văn muốn trích dẫn vào sổ tay Ghi chú!', SVG.alert);
+      return;
+    }
+    const res = await apiPost('/api/notes', {
+      lessonId: lesson.id,
+      courseId: course.id,
+      timestampSec: null,
+      content: `Trích dẫn bài đọc "${lesson.title}":\n"${text}"`
+    });
+    state.user.notes = res.notes;
+    sel.removeAllRanges();
+    renderHeader();
+    showHudToast('Đã lưu trích dẫn bài đọc vào sổ tay Ghi chú!', SVG.note);
+  });
+
+  // Bilingual EN-VI Reading toggle
+  const btnTransVi = document.getElementById('btnTranslateReadingVi');
+  btnTransVi?.addEventListener('click', async () => {
+    const existing = readingBilingualState[lesson.id];
+    if (existing && existing.blocksVi && existing.blocksVi.length > 0) {
+      existing.active = !existing.active;
+      renderLectureContent(ctx, contentData);
+      showHudToast(existing.active ? 'Đã bật chế độ Đọc Song Ngữ Anh – Việt' : 'Đã tắt dịch song ngữ', SVG.translate);
+      return;
+    }
+    try {
+      btnTransVi.disabled = true;
+      btnTransVi.innerHTML = `<span class="cds-spinner--sm"></span> <span>Đang dịch bài đọc sang Tiếng Việt...</span>`;
+      const res = await apiPost(`/api/lesson/${encodeURIComponent(lesson.id)}/translate-reading`, {});
+      readingBilingualState[lesson.id] = {
+        active: true,
+        blocksVi: res.blocksVi || []
+      };
+      renderLectureContent(ctx, contentData);
+      showHudToast('Đã dịch song ngữ Anh – Việt toàn bộ bài đọc!', SVG.translate);
+    } catch (err) {
+      btnTransVi.disabled = false;
+      btnTransVi.innerHTML = `${SVG.translate} <span>Dịch Song ngữ Anh – Việt</span>`;
+      showHudToast('Không thể dịch bài đọc lúc này: ' + err.message, SVG.alert);
+    }
+  });
+
+  // Audio Text-to-Speech (TTS) for Reading
+  const btnTts = document.getElementById('btnReadingTtsToggle');
+  btnTts?.addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) {
+      showHudToast('Trình duyệt của bạn không hỗ trợ đọc giọng nói (Web Speech API).', SVG.alert);
+      return;
+    }
+    if (readingTtsActive) {
+      stopReadingTts();
+      showHudToast('Đã dừng đọc bài (Audio TTS)', SVG.stop);
+      return;
+    }
+    const articleEl = document.getElementById('readingArticleBody');
+    if (!articleEl) return;
+    const clone = articleEl.cloneNode(true);
+    clone.querySelectorAll('.cds-reading-bi-vi').forEach(el => el.remove());
+    const rawText = (clone.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!rawText) return;
+
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(rawText.slice(0, 12000));
+    utter.lang = 'en-US';
+    utter.rate = Number(state.user.preferences?.playbackRate) || 1;
+    utter.onend = () => {
+      readingTtsActive = false;
+      const b = document.getElementById('btnReadingTtsToggle');
+      if (b) {
+        b.classList.remove('cds-btn-completed');
+        b.classList.add('cds-btn-outline');
+        b.innerHTML = `${SVG.volume} <span>Đọc bài (Audio TTS)</span>`;
+      }
+    };
+    readingTtsActive = true;
+    btnTts.classList.remove('cds-btn-outline');
+    btnTts.classList.add('cds-btn-completed');
+    btnTts.innerHTML = `${SVG.stop} <span>Dừng đọc (Audio TTS)</span>`;
+    window.speechSynthesis.speak(utter);
+    showHudToast('Đang đọc thành tiếng bài Reading (Audio TTS)...', SVG.volume);
+  });
 
   document.getElementById('selectPdfMode')?.addEventListener('change', (e) => {
     state.pdfPreviewMode = e.target.value;
@@ -2166,8 +2784,87 @@ function setupModals() {
 
   const shortcutsModal = document.getElementById('shortcutsModal');
   const slideLightboxModal = document.getElementById('slideLightboxModal');
+  const bookmarksModal = document.getElementById('bookmarksModal');
+  const bookmarksBody = document.getElementById('bookmarksContainer');
   const closeShortcuts = () => shortcutsModal?.classList.add('hidden');
   const closeSlideLightbox = () => slideLightboxModal?.classList.add('hidden');
+  const closeBookmarks = () => bookmarksModal?.classList.add('hidden');
+
+  function renderBookmarksModal() {
+    if (!bookmarksBody) return;
+    const bookmarks = state.user.bookmarks || [];
+    if (bookmarks.length === 0) {
+      bookmarksBody.innerHTML = `<div class="cds-empty-state">Chưa có bài học nào được đánh dấu (Bookmark). Hãy bấm biểu tượng Ghim cạnh tên bài giảng hoặc nhấn phím <strong>B</strong> khi đang xem bài học để lưu vào kho tra cứu nhanh.</div>`;
+      return;
+    }
+    bookmarksBody.innerHTML = `<div class="cds-downloads-list">${bookmarks.map(lid => {
+      const ctx = findLessonContext(lid);
+      if (!ctx) return '';
+      const { course, module, lesson } = ctx;
+      const prog = state.user.progress?.[lesson.id];
+      const isDone = prog?.status === 'completed';
+      const resumeSec = (!isDone && prog?.currentTime > 5) ? Math.floor(prog.currentTime) : null;
+      return `
+        <div class="cds-download-row">
+          <div class="cds-roadmap-item-left">
+            <span class="cds-check-circle ${isDone ? 'completed' : ''}" style="color:var(--cds-blue);">
+              ${isDone ? SVG.check : (lesson.type === 'video' ? SVG.play : SVG.reading)}
+            </span>
+            <div style="min-width:0; flex:1;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:11.5px; font-weight:700; color:var(--cds-blue);">${escapeHtml(course.code)}</span>
+                <span style="font-weight:700; font-size:14.5px; color:var(--cds-text-primary);">${escapeHtml(lesson.title)}</span>
+                <span class="cds-status-pill ${isDone ? 'cds-status-pill--synced' : 'cds-status-pill--running'}">
+                  ${isDone ? `${SVG.check} <span>Completed</span>` : `<span>${lesson.type === 'video' ? 'Video 720p' : 'Reading'} · ${lesson.durationText}</span>`}
+                </span>
+              </div>
+              <div style="font-size:12.5px; color:var(--cds-text-secondary); margin-top:2px;">
+                ${escapeHtml(course.title)} › ${escapeHtml(module.title)}
+              </div>
+            </div>
+          </div>
+          <div class="cds-roadmap-item-actions">
+            <button type="button" class="cds-btn-outline cds-btn-sm" data-unbookmark-modal="${escapeHtml(lesson.id)}" title="Bỏ ghim khỏi danh sách đã lưu">
+              ${SVG.trash}
+              <span>Bỏ ghim</span>
+            </button>
+            <button type="button" class="cds-btn-primary cds-btn-sm" data-open-bookmark-course="${escapeHtml(course.id)}" data-open-bookmark-lesson="${escapeHtml(lesson.id)}" data-open-bookmark-sec="${resumeSec || ''}">
+              ${SVG.play}
+              <span>${resumeSec ? `Học tiếp (${formatClock(resumeSec)})` : 'Mở bài học'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('')}</div>`;
+
+    bookmarksBody.querySelectorAll('[data-unbookmark-modal]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const lid = btn.getAttribute('data-unbookmark-modal');
+        if (lid) {
+          await toggleLessonBookmark(lid);
+          renderBookmarksModal();
+        }
+      });
+    });
+
+    bookmarksBody.querySelectorAll('[data-open-bookmark-lesson]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cId = btn.getAttribute('data-open-bookmark-course');
+        const lId = btn.getAttribute('data-open-bookmark-lesson');
+        const sec = btn.getAttribute('data-open-bookmark-sec');
+        closeBookmarks();
+        openLecture(cId, lId, sec ? parseFloat(sec) : null);
+      });
+    });
+  }
+
+  document.getElementById('btnOpenBookmarks')?.addEventListener('click', () => {
+    renderBookmarksModal();
+    bookmarksModal?.classList.remove('hidden');
+  });
+  document.getElementById('btnCloseBookmarks')?.addEventListener('click', closeBookmarks);
+  bindSafeModalBackdrop(bookmarksModal, closeBookmarks);
 
   document.getElementById('btnOpenSearch')?.addEventListener('click', openSearch);
   document.getElementById('btnCloseSearch')?.addEventListener('click', closeSearch);
@@ -2192,6 +2889,7 @@ function setupModals() {
       closeSearch();
       closeShortcuts();
       closeSlideLightbox();
+      closeBookmarks();
       document.getElementById('notesModal')?.classList.add('hidden');
       document.getElementById('profileModal')?.classList.add('hidden');
       return;
@@ -2208,7 +2906,7 @@ function setupModals() {
       return;
     }
 
-    const anyModalOpen = [searchModal, shortcutsModal, slideLightboxModal, document.getElementById('notesModal'), document.getElementById('profileModal')]
+    const anyModalOpen = [searchModal, shortcutsModal, slideLightboxModal, bookmarksModal, document.getElementById('notesModal'), document.getElementById('profileModal')]
       .some(m => m && !m.classList.contains('hidden'));
     if (anyModalOpen || state.currentView !== 'lecture') return;
 
@@ -2218,6 +2916,20 @@ function setupModals() {
     if (key === 't') {
       e.preventDefault();
       toggleTheaterMode();
+    } else if (key === 'b') {
+      if (state.activeLessonId) {
+        e.preventDefault();
+        toggleLessonBookmark(state.activeLessonId);
+      }
+    } else if (key === 'p' && videoEl) {
+      e.preventDefault();
+      document.getElementById('btnTogglePip')?.click();
+    } else if ((e.key === '<' || e.key === ',') && videoEl) {
+      e.preventDefault();
+      stepVideoPlaybackSpeed(-1);
+    } else if ((e.key === '>' || e.key === '.') && videoEl) {
+      e.preventDefault();
+      stepVideoPlaybackSpeed(1);
     } else if (key === 's') {
       const snapBtn = document.getElementById('btnSnapSlideQuick');
       if (snapBtn && !snapBtn.disabled) {
@@ -2226,10 +2938,10 @@ function setupModals() {
       }
     } else if (key === 'n') {
       e.preventDefault();
-      const notesTabBtn = document.querySelector('[data-lec-tab="notes"]');
+      const notesTabBtn = document.querySelector('[data-vtab="notes"]');
       if (notesTabBtn) notesTabBtn.click();
       setTimeout(() => document.getElementById('noteInput')?.focus(), 40);
-      showHudToast('Đã mở khung Ghi chú (N)');
+      showHudToast('Đã mở khung Ghi chú (N)', SVG.note);
     } else if (key === 'c') {
       const subSel = document.getElementById('selectSubtitleLang');
       if (subSel && subSel.options.length > 0) {
@@ -2237,7 +2949,7 @@ function setupModals() {
         const nextIdx = (subSel.selectedIndex + 1) % subSel.options.length;
         subSel.selectedIndex = nextIdx;
         subSel.dispatchEvent(new Event('change'));
-        showHudToast(`Phụ đề: ${subSel.options[nextIdx].text}`);
+        showHudToast(`Phụ đề: ${subSel.options[nextIdx].text}`, SVG.translate);
       }
     } else if (key === 'f' && videoEl) {
       e.preventDefault();
@@ -2249,19 +2961,19 @@ function setupModals() {
     } else if (key === 'j' && videoEl) {
       e.preventDefault();
       videoEl.currentTime = Math.max(0, (videoEl.currentTime || 0) - 10);
-      showHudToast(`Tua lùi 10s (${formatClock(videoEl.currentTime)})`);
+      showHudToast(`Tua lùi 10s (${formatClock(videoEl.currentTime)})`, SVG.play);
     } else if (key === 'l' && videoEl) {
       e.preventDefault();
       videoEl.currentTime = Math.min(videoEl.duration || Infinity, (videoEl.currentTime || 0) + 10);
-      showHudToast(`Tua tới 10s (${formatClock(videoEl.currentTime)})`);
+      showHudToast(`Tua tới 10s (${formatClock(videoEl.currentTime)})`, SVG.play);
     } else if ((key === 'k' || e.key === ' ') && videoEl && tag !== 'BUTTON' && tag !== 'VIDEO' && tag !== 'A') {
       e.preventDefault();
       if (videoEl.paused) {
         videoEl.play().catch(() => {});
-        showHudToast('Đang phát video');
+        showHudToast('Đang phát video', SVG.play);
       } else {
         videoEl.pause();
-        showHudToast(`Đã tạm dừng tại ${formatClock(videoEl.currentTime)}`);
+        showHudToast(`Đã tạm dừng tại ${formatClock(videoEl.currentTime)}`, SVG.clock);
       }
     }
   });
@@ -2841,13 +3553,14 @@ function setupModals() {
     const totalLessons = totalVideos + totalReadings;
 
     if (activeProfileTab === 'analytics') {
-      const completedCount = Object.keys(state.user.completed || {}).filter(k => state.user.completed[k]).length;
+      const progressMap = state.user.progress || {};
+      const completedCount = Object.values(progressMap).filter(p => p?.status === 'completed').length;
       const overallPct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
       // Calculate study streak and total study time
       const studyLog = state.user.studyLog || {};
       const totalLoggedSec = Object.values(studyLog).reduce((acc, d) => acc + (Number(d?.secondsWatched) || 0), 0);
-      const totalProgressSec = Object.values(state.user.videoProgress || {}).reduce((acc, p) => acc + (Number(p?.currentTime) || 0), 0);
+      const totalProgressSec = Object.values(progressMap).reduce((acc, p) => acc + (Number(p?.currentTime) || 0), 0);
       const effectiveWatchSec = Math.max(totalLoggedSec, totalProgressSec);
       const watchHours = (effectiveWatchSec / 3600).toFixed(1);
 
@@ -2860,18 +3573,50 @@ function setupModals() {
         if (entry && (entry.secondsWatched > 0 || entry.lessonsCompleted > 0)) {
           streakDays++;
         } else if (i === 0) {
-          // Allow streak to continue if user studied yesterday
           continue;
         } else {
           break;
         }
       }
-      if (streakDays === 0 && (completedCount > 0 || Object.keys(state.user.videoProgress || {}).length > 0)) {
+      if (streakDays === 0 && (completedCount > 0 || Object.keys(progressMap).length > 0)) {
         streakDays = 1;
+      }
+
+      const todayKey = today.toISOString().slice(0, 10);
+      const todaySec = Number(studyLog[todayKey]?.secondsWatched) || 0;
+      const todayMin = Math.round(todaySec / 60);
+      const goalMin = Number(state.user.preferences?.dailyGoalMinutes) || 30;
+      const goalPct = Math.min(100, Math.round((todayMin / Math.max(1, goalMin)) * 100));
+
+      // Build 24-week (168 days) GitHub-style Activity Heatmap
+      const heatmapWeeksCount = 24;
+      const totalHeatmapDays = heatmapWeeksCount * 7;
+      const heatmapCells = [];
+      let activeDaysCount = 0;
+      for (let i = totalHeatmapDays - 1; i >= 0; i--) {
+        const d = new Date(today.getTime() - i * 86400000);
+        const key = d.toISOString().slice(0, 10);
+        const logEntry = studyLog[key];
+        const mins = Math.round((Number(logEntry?.secondsWatched) || 0) / 60);
+        const doneItems = Number(logEntry?.lessonsCompleted) || 0;
+        if (mins > 0 || doneItems > 0) activeDaysCount++;
+        let level = 0;
+        if (mins >= 45 || doneItems >= 4) level = 4;
+        else if (mins >= 25 || doneItems >= 2) level = 3;
+        else if (mins >= 10 || doneItems >= 1) level = 2;
+        else if (mins > 0) level = 1;
+        heatmapCells.push({
+          key,
+          mins,
+          doneItems,
+          level,
+          title: `${key}: ${mins} phút học · ${doneItems} bài hoàn thành`
+        });
       }
 
       const notesCount = (state.user.notes || []).length;
       const slidesCount = (state.user.notes || []).filter(n => Boolean(n.imageDataUrl)).length;
+      const bookmarksCount = (state.user.bookmarks || []).length;
       const completedCoursesCount = allCourses.filter(c => {
         const st = getCourseStats(c);
         return st.total > 0 && st.completed === st.total;
@@ -2883,8 +3628,8 @@ function setupModals() {
 
       // Build list of in-progress lessons for 1-click resume
       const inProgressLessons = [];
-      for (const [lessonId, prog] of Object.entries(state.user.videoProgress || {})) {
-        if (prog && prog.currentTime > 5 && !isDone(lessonId)) {
+      for (const [lessonId, prog] of Object.entries(progressMap)) {
+        if (prog && prog.currentTime > 5 && prog.status !== 'completed') {
           const ctx = findLessonContext(lessonId);
           if (ctx) {
             const pct = prog.duration > 0 ? Math.min(99, Math.max(3, Math.round((prog.currentTime / prog.duration) * 100))) : 25;
@@ -2934,8 +3679,50 @@ function setupModals() {
           <div class="cds-analytics-card">
             <div class="cds-analytics-icon" style="background:#F4F3FF; color:#6938EF;">${SVG.camera}</div>
             <div>
-              <div class="cds-analytics-val">${notesCount} ghi chú · ${slidesCount} Slide</div>
-              <div class="cds-analytics-label">Ghi chú kèm mốc giờ &amp; ảnh chụp Slide bài giảng</div>
+              <div class="cds-analytics-val">${notesCount} ghi chú · ${slidesCount} Slide · ${bookmarksCount} ghim</div>
+              <div class="cds-analytics-label">Ghi chú mốc giờ, ảnh chụp Slide &amp; bài học đã ghim</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mục tiêu học tập mỗi ngày (Daily Study Goal) & Biểu đồ nhiệt (Activity Heatmap) -->
+        <div class="cds-roadmap-stage">
+          <div class="cds-roadmap-stage-head" style="margin-bottom:10px;">
+            <div>
+              <div class="cds-roadmap-stage-title">Mục tiêu Học tập Hàng ngày &amp; Biểu đồ Nhiệt Hoạt động (24 Tuần)</div>
+              <div style="font-size:13px; color:var(--cds-text-secondary); margin-top:2px;">
+                Hôm nay bạn đã học <strong>${todayMin} / ${goalMin} phút (${goalPct}%)</strong> · Tổng cộng <strong>${activeDaysCount} ngày</strong> có hoạt động học tập.
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span style="font-size:12px; font-weight:700; color:var(--cds-text-secondary);">Mục tiêu/ngày:</span>
+              ${[15, 30, 45, 60].map(g => `
+                <button type="button" class="cds-speed-pill ${goalMin === g ? 'active' : ''}" data-set-daily-goal="${g}">${g}p</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="cds-progress-track" style="height:10px; margin-bottom:16px;">
+            <div class="cds-progress-fill ${goalPct >= 100 ? 'done' : ''}" style="width:${goalPct}%;"></div>
+          </div>
+
+          <div class="cds-heatmap-wrap">
+            <div class="cds-heatmap-grid">
+              ${heatmapCells.map(c => `
+                <div class="cds-heatmap-cell cds-heatmap-cell--l${c.level}" title="${escapeHtml(c.title)}"></div>
+              `).join('')}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:11.5px; color:var(--cds-text-secondary); flex-wrap:wrap; gap:8px;">
+              <span>24 tuần gần nhất (di chuột lên từng ô để xem số phút &amp; số bài học trong ngày)</span>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <span>Ít</span>
+                <span class="cds-heatmap-cell cds-heatmap-cell--l0" style="display:inline-block;"></span>
+                <span class="cds-heatmap-cell cds-heatmap-cell--l1" style="display:inline-block;"></span>
+                <span class="cds-heatmap-cell cds-heatmap-cell--l2" style="display:inline-block;"></span>
+                <span class="cds-heatmap-cell cds-heatmap-cell--l3" style="display:inline-block;"></span>
+                <span class="cds-heatmap-cell cds-heatmap-cell--l4" style="display:inline-block;"></span>
+                <span>Nhiều</span>
+              </div>
             </div>
           </div>
         </div>
@@ -3042,6 +3829,18 @@ function setupModals() {
           </div>
         </div>
       `;
+
+      profileBody.querySelectorAll('[data-set-daily-goal]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const g = Number(btn.getAttribute('data-set-daily-goal')) || 30;
+          if (!state.user.preferences) state.user.preferences = {};
+          state.user.preferences.dailyGoalMinutes = g;
+          await apiPost('/api/preferences', { dailyGoalMinutes: g });
+          renderHeader();
+          renderProfileBody();
+          showHudToast(`Đã đặt mục tiêu học tập: ${g} phút/ngày`, SVG.flame);
+        });
+      });
 
       profileBody.querySelectorAll('[data-analytics-resume-lesson]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -3640,6 +4439,57 @@ function setupModals() {
     renderProfileBody();
     if (activeProfileTab === 'discover' && discoverItems.length === 0 && !discoverLoading) {
       runCourseraDiscoverSearch(discoverQuery);
+    }
+  });
+
+  document.getElementById('btnHeaderDailyGoal')?.addEventListener('click', async () => {
+    activeProfileTab = 'analytics';
+    profileModal.classList.remove('hidden');
+    await loadProfileData();
+    renderProfileBody();
+  });
+
+  document.getElementById('btnExportBackupJson')?.addEventListener('click', async () => {
+    try {
+      const data = await apiGet('/api/state/export');
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ducklearn-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showHudToast('Đã xuất tệp sao lưu (.json) thành công!', SVG.download);
+    } catch (err) {
+      alert('Lỗi xuất sao lưu: ' + err.message);
+    }
+  });
+
+  const inputRestoreJson = document.getElementById('inputRestoreBackupJson');
+  document.getElementById('btnImportBackupJson')?.addEventListener('click', () => {
+    inputRestoreJson?.click();
+  });
+  inputRestoreJson?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const payload = parsed.state || parsed;
+      const res = await apiPost('/api/state/import', { state: payload });
+      if (res.state) {
+        state.user = res.state;
+        renderHeader();
+        renderProfileBody();
+        if (state.currentView === 'course-home') renderCourseHome();
+        showHudToast('Đã khôi phục tiến độ, ghi chú & bài ghim từ tệp sao lưu!', SVG.check);
+      }
+    } catch (err) {
+      alert('Tệp sao lưu (.json) không hợp lệ: ' + err.message);
+    } finally {
+      inputRestoreJson.value = '';
     }
   });
 

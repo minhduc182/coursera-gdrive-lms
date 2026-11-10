@@ -18,6 +18,7 @@ const {
 } = require('./lib/coursera-crawler');
 const {
   ensureVietnameseCues,
+  ensureTranslatedReadingBlocks,
   generateLessonStudyGuide
 } = require('./lib/study-assistant');
 const {
@@ -131,13 +132,15 @@ function loadUserState() {
     studyLog: {},
     notes: [],
     bookmarks: [],
+    highlights: {},
     uncrawlableCourses: [],
     lastVisited: null,
     preferences: {
       playerMode: 'html5', // 'html5' | 'iframe'
       playbackRate: 1,
       subtitleLang: 'en', // 'en' | 'vi' | 'dual' | 'off'
-      autoAdvance: false
+      autoAdvance: true,
+      dailyGoalMinutes: 30
     }
   };
   if (!fs.existsSync(STATE_PATH)) {
@@ -150,6 +153,8 @@ function loadUserState() {
       ...defaultState,
       ...raw,
       studyLog: (raw.studyLog && typeof raw.studyLog === 'object') ? raw.studyLog : {},
+      bookmarks: Array.isArray(raw.bookmarks) ? raw.bookmarks : [],
+      highlights: (raw.highlights && typeof raw.highlights === 'object') ? raw.highlights : {},
       uncrawlableCourses: Array.isArray(raw.uncrawlableCourses) ? raw.uncrawlableCourses : [],
       preferences: { ...defaultState.preferences, ...(raw.preferences || {}) }
     };
@@ -554,6 +559,9 @@ const server = http.createServer(async (req, res) => {
       }
       if (nextStatus === 'completed' && prev.status !== 'completed') {
         state.studyLog[todayKey].lessonsCompleted = (state.studyLog[todayKey].lessonsCompleted || 0) + 1;
+        if (!deltaSec) {
+          state.studyLog[todayKey].secondsWatched = (state.studyLog[todayKey].secondsWatched || 0) + 180;
+        }
       }
 
       const catalog = loadCatalog();
@@ -642,14 +650,86 @@ const server = http.createServer(async (req, res) => {
       const body = await readJsonBody(req);
       const { lessonId } = body;
       const state = loadUserState();
+      if (!Array.isArray(state.bookmarks)) state.bookmarks = [];
       const idx = state.bookmarks.indexOf(lessonId);
       if (idx >= 0) {
         state.bookmarks.splice(idx, 1);
-      } else {
-        state.bookmarks.push(lessonId);
+      } else if (lessonId) {
+        state.bookmarks.unshift(lessonId);
       }
       saveUserState(state);
       return sendJson(res, 200, { ok: true, bookmarks: state.bookmarks });
+    }
+
+    // 6b. POST /api/highlights & DELETE /api/highlights/:lessonId/:hlId
+    if (req.method === 'POST' && pathname === '/api/highlights') {
+      const body = await readJsonBody(req);
+      const { lessonId, text, color } = body;
+      const cleanText = String(text || '').trim();
+      if (!lessonId || cleanText.length < 2) {
+        return sendJson(res, 400, { error: 'lessonId and highlighted text required' });
+      }
+      const state = loadUserState();
+      if (!state.highlights || typeof state.highlights !== 'object') state.highlights = {};
+      if (!Array.isArray(state.highlights[lessonId])) state.highlights[lessonId] = [];
+
+      const exists = state.highlights[lessonId].find(h => h.text === cleanText);
+      if (!exists) {
+        state.highlights[lessonId].push({
+          id: `hl_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          text: cleanText.slice(0, 1200),
+          color: ['yellow', 'green', 'blue', 'pink'].includes(color) ? color : 'yellow',
+          createdAt: new Date().toISOString()
+        });
+        saveUserState(state);
+      }
+      return sendJson(res, 200, { ok: true, highlights: state.highlights });
+    }
+
+    if (req.method === 'DELETE' && pathname.startsWith('/api/highlights/')) {
+      const rest = pathname.slice('/api/highlights/'.length);
+      const parts = rest.split('/');
+      const lessonId = parts[0];
+      const hlId = parts[1];
+      const state = loadUserState();
+      if (state.highlights && Array.isArray(state.highlights[lessonId])) {
+        state.highlights[lessonId] = state.highlights[lessonId].filter(h => h.id !== hlId);
+        saveUserState(state);
+      }
+      return sendJson(res, 200, { ok: true, highlights: state.highlights || {} });
+    }
+
+    // 6c. GET /api/state/export & POST /api/state/import (1-click JSON Backup & Restore)
+    if (req.method === 'GET' && pathname === '/api/state/export') {
+      const state = loadUserState();
+      return sendJson(res, 200, {
+        exportedAt: new Date().toISOString(),
+        app: 'ducklearn',
+        state
+      });
+    }
+
+    if (req.method === 'POST' && pathname === '/api/state/import') {
+      const body = await readJsonBody(req);
+      const incoming = body?.state && typeof body.state === 'object' ? body.state : body;
+      if (!incoming || typeof incoming !== 'object') {
+        return sendJson(res, 400, { error: 'Dữ liệu file sao lưu không hợp lệ.' });
+      }
+      const current = loadUserState();
+      const nextState = {
+        ...current,
+        progress: (incoming.progress && typeof incoming.progress === 'object') ? incoming.progress : current.progress,
+        progressBySlug: (incoming.progressBySlug && typeof incoming.progressBySlug === 'object') ? incoming.progressBySlug : current.progressBySlug,
+        studyLog: (incoming.studyLog && typeof incoming.studyLog === 'object') ? incoming.studyLog : current.studyLog,
+        notes: Array.isArray(incoming.notes) ? incoming.notes : current.notes,
+        bookmarks: Array.isArray(incoming.bookmarks) ? incoming.bookmarks : current.bookmarks,
+        highlights: (incoming.highlights && typeof incoming.highlights === 'object') ? incoming.highlights : current.highlights,
+        lastVisited: incoming.lastVisited || current.lastVisited,
+        preferences: { ...current.preferences, ...(incoming.preferences || {}) }
+      };
+      reconcileUserState(nextState);
+      saveUserState(nextState);
+      return sendJson(res, 200, { ok: true, state: nextState });
     }
 
     // 7. POST /api/notes & DELETE /api/notes/:id
@@ -812,6 +892,22 @@ const server = http.createServer(async (req, res) => {
         cuesVi,
         viAutoTranslated: true,
         studyGuide
+      });
+    }
+
+    // 8c. POST /api/lesson/:lessonId/translate-reading (Bilingual Reading Paragraphs Translation)
+    if (req.method === 'POST' && pathname.startsWith('/api/lesson/') && pathname.endsWith('/translate-reading')) {
+      const lessonId = pathname.slice('/api/lesson/'.length, -'/translate-reading'.length);
+      const body = await readJsonBody(req);
+      const blocks = Array.isArray(body.blocks) ? body.blocks.map(b => String(b || '').trim()).filter(Boolean) : [];
+      if (blocks.length === 0) {
+        return sendJson(res, 400, { error: 'Không có đoạn văn bản nào để dịch.' });
+      }
+      const translatedBlocks = await ensureTranslatedReadingBlocks(lessonId, blocks.slice(0, 120), TEXT_CACHE_DIR);
+      return sendJson(res, 200, {
+        ok: true,
+        lessonId,
+        translatedBlocks
       });
     }
 

@@ -57,12 +57,26 @@
 
       <!-- Right Actions -->
       <div class="cds-header-right">
+        <button class="cds-top-link-btn cds-daily-goal-pill" id="btnHeaderDailyGoal" type="button" title="Mục tiêu học tập hôm nay — Bấm để xem Biểu đồ nhiệt &amp; Thống kê">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E04F16" stroke-width="2.2">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+          </svg>
+          <span id="headerDailyGoalText">0/30p</span>
+        </button>
+
         <button class="cds-top-link-btn" id="btnOpenExplore" type="button" title="Tìm kiếm &amp; Shopping khóa học trực tiếp trên Coursera gốc">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
           </svg>
-          <span>Explore Coursera</span>
+          <span>Explore</span>
+        </button>
+
+        <button class="cds-top-link-btn" id="btnOpenBookmarks" type="button" title="Kho bài giảng trọng tâm đã ghim (Bookmarks)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Saved (<span id="totalBookmarksBadge">0</span>)</span>
         </button>
 
         <button class="cds-top-link-btn" id="btnOpenAllNotes" title="Sổ tay ghi chú &amp; Slide">
@@ -211,6 +225,23 @@
             </div>
           </div>
           <div class="cds-profile-header-actions">
+            <button class="cds-btn-outline cds-btn-sm" id="btnExportBackupJson" type="button" title="Sao lưu toàn bộ tiến độ, ghi chú, Slide, bài đã ghim &amp; bút nhớ ra file .json">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Sao lưu (.json)</span>
+            </button>
+            <button class="cds-btn-outline cds-btn-sm" id="btnImportBackupJson" type="button" title="Khôi phục dữ liệu học tập từ file sao lưu .json">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Khôi phục</span>
+            </button>
+            <input type="file" id="inputRestoreBackupJson" accept=".json,application/json" class="hidden" />
             <button class="cds-btn-outline cds-btn-sm" id="btnChangePassword" type="button">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -293,16 +324,40 @@
         </div>
         <div class="cds-modal-body">
           <div class="cds-shortcuts-grid">
-            <div class="cds-shortcut-row"><span>Phát / Tạm dừng video</span><span class="cds-kbd">Space</span> / <span class="cds-kbd">K</span></div>
-            <div class="cds-shortcut-row"><span>Tua lùi / Tua tiến 10 giây</span><span class="cds-kbd">J</span> / <span class="cds-kbd">L</span></div>
-            <div class="cds-shortcut-row"><span>Chế độ Tập trung (Ẩn/Hiện Sidebar)</span><span class="cds-kbd">T</span></div>
-            <div class="cds-shortcut-row"><span>Chụp nhanh Slide hiện tại vào Ghi chú</span><span class="cds-kbd">S</span></div>
-            <div class="cds-shortcut-row"><span>Mở nhanh ô nhập Ghi chú</span><span class="cds-kbd">N</span></div>
-            <div class="cds-shortcut-row"><span>Chuyển đổi Phụ đề (Song ngữ / VI / EN / Tắt)</span><span class="cds-kbd">C</span></div>
-            <div class="cds-shortcut-row"><span>Phóng to toàn màn hình Video</span><span class="cds-kbd">F</span></div>
-            <div class="cds-shortcut-row"><span>Tìm kiếm nhanh toàn hệ thống</span><span class="cds-kbd">Ctrl + K</span></div>
+            <div class="cds-shortcut-row"><span>Phát / Tạm dừng video</span><span class="cds-shortcut-keys"><kbd>Space</kbd> / <kbd>K</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Tua lùi / Tua tiến 10 giây</span><span class="cds-shortcut-keys"><kbd>J</kbd> / <kbd>L</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Giảm / Tăng tốc độ phát video (0.75x – 2.0x)</span><span class="cds-shortcut-keys"><kbd>&lt;</kbd> / <kbd>&gt;</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Bật / Tắt Cửa sổ nổi (Picture-in-Picture)</span><span class="cds-shortcut-keys"><kbd>P</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Ghim / Bỏ ghim bài học trọng tâm (Bookmark)</span><span class="cds-shortcut-keys"><kbd>B</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Chế độ Tập trung (Ẩn/Hiện Sidebar)</span><span class="cds-shortcut-keys"><kbd>T</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Chụp nhanh Slide hiện tại vào Ghi chú</span><span class="cds-shortcut-keys"><kbd>S</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Mở nhanh ô nhập Ghi chú</span><span class="cds-shortcut-keys"><kbd>N</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Chuyển đổi Phụ đề (Song ngữ / VI / EN / Tắt)</span><span class="cds-shortcut-keys"><kbd>C</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Phóng to toàn màn hình Video</span><span class="cds-shortcut-keys"><kbd>F</kbd></span></div>
+            <div class="cds-shortcut-row"><span>Tìm kiếm nhanh toàn hệ thống</span><span class="cds-shortcut-keys"><kbd>Ctrl + K</kbd></span></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Bookmarks (Saved Lessons) Modal -->
+    <div id="bookmarksModal" class="cds-modal-backdrop hidden">
+      <div class="cds-modal-dialog">
+        <div class="cds-modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cds-blue)" stroke-width="2.2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <h3 style="margin:0;">Bài học trọng tâm đã ghim (Saved Bookmarks)</h3>
+          </div>
+          <button class="cds-icon-close" id="btnCloseBookmarks" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="bookmarksContainer" class="cds-modal-body"></div>
       </div>
     </div>
 

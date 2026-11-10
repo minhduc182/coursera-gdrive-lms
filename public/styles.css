@@ -2058,3 +2058,300 @@ body.cds-theater-active .cds-reading-container {
   line-height: 1.4;
 }
 
+/* ── Header Daily Goal Pill & Bookmark Icon Button ── */
+.cds-daily-goal-pill {
+  border-color: #FED7AA;
+  background: #FFF7ED;
+  color: #C2410C;
+  font-weight: 700;
+}
+.cds-daily-goal-pill:hover {
+  background: #FFEDD5;
+  border-color: #FB923C;
+}
+.cds-daily-goal-pill.achieved {
+  border-color: #86EFAC;
+  background: var(--cds-green-bg);
+  color: var(--cds-green);
+}
+
+.cds-bookmark-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cds-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.14s ease;
+}
+.cds-bookmark-icon-btn:hover {
+  background: var(--cds-blue-light);
+  color: var(--cds-blue);
+  border-color: #BFDBFE;
+}
+.cds-bookmark-icon-btn.active {
+  color: var(--cds-blue);
+  background: var(--cds-blue-light);
+  border-color: #93C5FD;
+}
+
+/* ── Speed Pills (1x - 2x) ── */
+.cds-speed-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #F2F4F7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--cds-border-light);
+}
+.cds-speed-pill {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cds-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.cds-speed-pill:hover {
+  background: #FFFFFF;
+  color: var(--cds-blue);
+}
+.cds-speed-pill.active {
+  background: var(--cds-blue);
+  color: #FFFFFF;
+  border-color: var(--cds-blue);
+}
+
+/* ── Interactive Multiple-Choice Quiz (Coursera Coach & Quiz) ── */
+.cds-coach-sec-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+  margin-bottom: 12px;
+}
+
+.cds-quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cds-quiz-card {
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: #FAFBFC;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.cds-quiz-card.answered-ok {
+  border-color: #86EFAC;
+  background: #F6FEF9;
+}
+.cds-quiz-card.answered-wrong {
+  border-color: #FCA5A5;
+  background: #FFFBFB;
+}
+
+.cds-quiz-question {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--cds-text-primary);
+  line-height: 1.45;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cds-quiz-qnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--cds-blue-light);
+  color: var(--cds-blue);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cds-quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.cds-quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--cds-border);
+  background: #FFFFFF;
+  color: var(--cds-text-primary);
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.cds-quiz-option:hover {
+  border-color: var(--cds-blue);
+  background: #F5F8FF;
+}
+.cds-quiz-option.correct {
+  border-color: #16A34A;
+  background: #DCFCE7;
+  color: #14532D;
+  font-weight: 700;
+}
+.cds-quiz-option.wrong {
+  border-color: #DC2626;
+  background: #FEE2E2;
+  color: #7F1D1D;
+  font-weight: 600;
+}
+.cds-quiz-option.dimmed {
+  opacity: 0.65;
+}
+
+.cds-quiz-opt-letter {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #F2F4F7;
+  color: var(--cds-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cds-quiz-option.correct .cds-quiz-opt-letter {
+  background: #16A34A;
+  color: #FFFFFF;
+}
+.cds-quiz-option.wrong .cds-quiz-opt-letter {
+  background: #DC2626;
+  color: #FFFFFF;
+}
+
+.cds-quiz-explanation {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.cds-quiz-explanation.ok {
+  background: #ECFDF3;
+  border-left: 4px solid #16A34A;
+  color: #14532D;
+}
+.cds-quiz-explanation.err {
+  background: #FEF3F2;
+  border-left: 4px solid #DC2626;
+  color: #7F1D1D;
+}
+
+/* ── Reading Smart Toolbar, Highlights & Bilingual EN-VI Paragraphs ── */
+.cds-reading-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  margin: 16px 0;
+  background: #F8FAFC;
+  border: 1px solid var(--cds-border-light);
+  border-left: 4px solid var(--cds-blue);
+  border-radius: 8px;
+}
+
+.cds-reading-hl {
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #111827;
+}
+.cds-reading-hl--yellow {
+  background: #FEF08A;
+  border-bottom: 2px solid #EAB308;
+}
+.cds-reading-hl--green {
+  background: #BBF7D0;
+  border-bottom: 2px solid #22C55E;
+}
+.cds-reading-hl--blue {
+  background: #BAE6FD;
+  border-bottom: 2px solid #0EA5E9;
+}
+
+.cds-reading-bi-vi {
+  margin: 6px 0 14px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--cds-blue);
+  background: #F0F5FF;
+  border-radius: 0 6px 6px 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #1E3A8A;
+}
+
+/* ── GitHub-style 24-Week Activity Heatmap ── */
+.cds-heatmap-wrap {
+  background: #FAFBFC;
+  border: 1px solid var(--cds-border-light);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+
+.cds-heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  grid-auto-flow: column;
+  grid-auto-columns: 13px;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.cds-heatmap-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+.cds-heatmap-cell--l0 {
+  background: #EBEDF0;
+}
+.cds-heatmap-cell--l1 {
+  background: #BFDBFE;
+}
+.cds-heatmap-cell--l2 {
+  background: #60A5FA;
+}
+.cds-heatmap-cell--l3 {
+  background: #2563EB;
+}
+.cds-heatmap-cell--l4 {
+  background: #1E3A8A;
+}
+
+
